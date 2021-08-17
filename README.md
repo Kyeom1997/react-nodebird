@@ -74,3 +74,129 @@ next의 가장 큰 장점 중 하나는 서버 사이드 렌더링(Server Side R
 3. package.json 파일에서 scripts의 test를 삭제하고 `"dev": "next"`로 변경한다. `npm run dev`를 터미널에 입력하면 `npm run next`가 실행된다.
 
 4. `next`는 `pages`라는 폴더 안에 페이지를 정의해야 하기 때문에 `pages` 폴더를 생성해 준다. 이와 같이 폴더를 생성하면 개별적인 폴더로 인식, 즉 코드 스플리팅된 컴포넌트로 만들어 주기 때문에 react-router dom이 필요없이 페이지 이름이 리소스 이름인 페이지가 생성이 된다.
+
+<br><br>
+
+### 레이아웃 (상속개념)
+
+<br>
+components 폴더를 생성하여 AppLayout.js를 생성한다.
+<br><br>
+
+```js
+import React, { children } from "react";
+import PropTypes from "prop-types";
+import Link from "next/link";
+
+const AppLayout = ({ children }) => {
+  return (
+    <div>
+      <div>공통 메뉴</div>
+      {children}
+    </div>
+  );
+};
+
+AppLayout.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export default AppLayout;
+```
+
+<br>
+이때 children 값이 props로 넘어가기 때문에 propTypes를 통해 검사를 진행한다. 여기서 children은 node 타입으로 지정해 주었고, node.js의 node가 아니라 리액트의 요소들을 칭한다. 즉, return 안에 들어가는 모든 것들이 node이다. 이와 같이 컴포넌트를 생성한 후, 다른 컴포넌트에서 불러오면, 감싸진 요소가 children이 된다.
+<br><br>
+
+```js
+import React from "react";
+import AppLayout from "../components/AppLayout";
+
+const Home = () => {
+  return (
+    <AppLayout>
+      <div>Hello, Next!</div>
+    </AppLayout>
+  );
+};
+
+export default Home;
+```
+
+<br><br>
+
+### Link와 Eslint
+
+<br>
+
+### Link
+
+<br>
+
+Next는 리액트 라우터를 사용하지 않고, `import Link from "next/link";`를 선언한 후, Link 태그를 사용하면 링크 기능을 사용할 수 있다.
+<br><br>
+
+```js
+import React, { children } from "react";
+import PropTypes from "prop-types";
+import Link from "next/link";
+
+const AppLayout = ({ children }) => {
+  return (
+    <div>
+      <div>
+        <Link href="/">
+          <a>노드버드</a>
+        </Link>
+        <Link href="/profile">
+          <a>프로필</a>
+        </Link>
+        <Link href="/signup">
+          <a>회원가입</a>
+        </Link>
+      </div>
+      {children}
+    </div>
+  );
+};
+
+AppLayout.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export default AppLayout;
+```
+
+<br>
+
+### Eslint
+
+<br>
+
+Eslint는 코드 스타일을 가이드 해 줌으로써, 팀 프로젝트시 일관된 코드를 만들어 줄 수 있게 도와준다. `npm i -D eslint eslint-plugin-import eslint-plugin-react eslint-plugin-react-hooks`를 통해 설치한 후에, `.eslintrc` 파일을 생성한다.
+
+```eslintrc
+{
+    "parserOptions": {
+        "ecmaVersion": 2021,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "env": {
+        "browser": true,
+        "node": true,
+        "es6": true
+    },
+    "extends": [
+        "eslint:recommend",
+        "plugin:react/recommended"
+    ],
+    "plugins": [
+        "import",
+        "react-hooks"
+    ],
+
+}
+```
