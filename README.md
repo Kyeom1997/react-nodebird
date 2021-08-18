@@ -15,10 +15,6 @@
 
 <br>
 
-## 1-1 Next.js 역할 소개 및 간단한 설정
-
-<br>
-
 ### Next.js
 
 <br>
@@ -200,3 +196,167 @@ Eslint는 코드 스타일을 가이드 해 줌으로써, 팀 프로젝트시 �
 
 }
 ```
+
+<br>
+
+### CH.1 Q&A
+
+<br>
+
+- CORS : 서버 사이드 렌더링시에, 백엔드 서버와 프론트엔드 서버의 도메인(포트)이 다르기 때문에 CORS가 걸린다. 그렇기 때문에 백엔드 서버에서 CORS를 설정해 주어야 한다.
+
+> <br> CORS(Cross-Origin Resource Sharing) : 브라우저에서 Domain 주소가 다르면 요청을 막아버리는 에러 <br><br>
+
+- 브라우저가 리액트면, 프론트 서버는 노드, 백엔드 서버에 노드가 하나 더 있는 것이다. (노드가 두개, 서버를 두개로 구축하는 것이다.) 여기서 프론트 서버란 웹팩 데브서버나 클라우드 서버를 말한다. 프론트 서버에서 백엔드 서버로 요청을 보내는 것, 즉, 서버끼리 통신을 할때에는 CORS 에러가 발생하지 않는다.
+  <br><br>
+
+---
+
+<br>
+
+## Chapter 2.
+
+<br>
+
+### antd (ant-design)
+
+<br>
+Antd는 CSS 프레임워크이다. 리액트, 뷰, 앵귤러에서 모두 사용 가능하다. 버튼, 아이콘과 같은 UI 요소들이 미리 만들어져 있기 때문에 가져와서 사용하기만 하면 된다는 장점이 있다. Antd 이전에는 Bootstrap, Material UI와 같은 프레임워크를 사용했는데 획일화된 디자인을 가져다 쓴다는 단점이 있다. 그렇기 때문에 고객이 있는 페이지를 개발할 때는 CSS 프레임워크를 사용하지 않고, 디자이너와 협업하는 경우가 많다. 
+<br><br>
+그 외 디자인은 styled-components를 사용한다.
+<br><br>
+
+```
+npm i antd styled-components
+```
+
+<br>
+
+### \_app.js
+
+<br>
+파일에서 공통적으로 사용하는 부분은 pages 폴더 안에 _app.js라는 파일을 생성하여 사용한다. _app.js는 모든 페이지의 공통으로 해당하는 부분이고 components 폴더 안의 AppLayout.js는 부분적으로 사용한다.
+<br><br>
+
+```js
+import React from "react";
+import PropTypes from "prop-types";
+import "antd/dist/antd.css";
+
+const NodeBird = ({ Component }) => {
+  return <Component />;
+};
+
+NodeBird.propTypes = {
+  Component: PropTypes.elementType.isRequired,
+};
+
+export default NodeBird;
+```
+
+<br>
+antd의 css 파일이 모든 페이지에 해당되기 때문에 _app.js 파일에서 불러와 주었다.
+<br><br>
+
+만일 head 부분의 수정이나 변경이 필요할 경우, next에서 head 컴포넌트를 불러오면 된다. 공통된 head라면 \_app.js에서 불러오면 되고, 그렇지 않다면 index.js와 같은 특정 페이지에서 불러오면 된다.
+<br><br>
+
+```js
+import React from "react";
+import PropTypes from "prop-types";
+import Head from "next/head";
+import "antd/dist/antd.css";
+
+const NodeBird = ({ Component }) => {
+  return (
+    <>
+      <Head>
+        <meta charset="utf-8" />
+        <title>NodeBird</title>
+      </Head>
+      <Component />;
+    </>
+  );
+};
+
+NodeBird.propTypes = {
+  Component: PropTypes.elementType.isRequired,
+};
+
+export default NodeBird;
+```
+
+<br>
+
+```js
+import React from "react";
+import Head from "next/head";
+import AppLayout from "../components/AppLayout";
+
+const Profile = () => {
+  return (
+    <>
+      <Head>
+        <title>내 프로필 | NodeBird</title>
+      </Head>
+      <AppLayout>내 프로필</AppLayout>
+    </>
+  );
+};
+
+export default Profile;
+```
+
+<br>
+
+### 반응형 그리드 사용하기
+
+<br>
+AppLayout.js에 Input 버튼을 추가하고, enterButton 이라는 props를 antd로 불러와 파란색 버튼이 적용되도록 하였다. 
+<br><br>
+
+```js
+<Menu.Item>
+  <Input.Search enterButton />
+</Menu.Item>
+```
+
+<br>
+
+![enterbutton](https://user-images.githubusercontent.com/78855917/129900102-346acf08-6e47-4c02-9144-829a4dff7bf0.jpg)
+<br><br>
+그러나 input 버튼의 배치가 옆의 버튼들과 다르게 위로 배치되어 있기 때문에 이를 재배치 해주어야 한다. 이때 Input.Search 컴포넌트 안에 style을 주면 기본 CSS 처럼 앤트 디자인의 CSS를 덮어 씌울 수 있다.
+<br><br>
+
+```js
+<Menu.Item>
+  <Input.Search enterButton style={{ verticalAlign: "middle" }} />
+</Menu.Item>
+```
+
+<br>
+그리고 이러한 CSS 프레임워크에는 반응형 그리드라는 것이 있다. 여기서 반응형 그리드란, 모바일 페이지, 태블릿 페이지, 웹 페이지와 같이 다른 화면의 크기에 따라 컴포넌트와 같은 것들이 재배치되는 것이다. 반응형을 디자인 할 때는 모바일 페이지를 먼저 구상해야 한다.
+<br><br>
+
+```js
+<Row gutter={8}>
+  <Col xs={24} md={6}>
+    왼쪽 메뉴
+  </Col>
+  <Col xs={24} md={12}>
+    {children}
+  </Col>
+  <Col xs={24} md={6}>
+    <a
+            href="https://www.zerocho.com"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Made By Zerocho
+  </Col>
+</Row>
+```
+
+<br>
+
+여기서 xs는 모바일, sm은 태블릿, md는 노트북, lg는 데스크탑과 같이 각각 px이 정해져 있다. 24로 나누는 이유는 나누어지는 숫자가 많기 때문이다. gutter는 각 column 사이의 padding을 지정해 준다. 각 column 끼리 너무 붙는 현상을 방지해 준다. a 태그로 새창을 열때는 `target="_blank`를 사용하는데, 이는 보안 위험이 있기 때문에 `rel="noreferrer noopener"`를 같이 지정해 주는 편이 좋다.
