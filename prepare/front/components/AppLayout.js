@@ -1,9 +1,13 @@
-import React, { children } from "react";
+import React, { children, useState } from "react";
 import PropTypes from "prop-types";
 import Link from "next/link";
 import { Input, Menu, Row, Col } from "antd";
 
+import UserProfile from "../components/UserProfile";
+import LoginForm from "../components/LoginForm";
+
 const AppLayout = ({ children }) => {
+  const [isLoggedin, setisLoggedin] = useState(false);
   return (
     <div>
       <Menu mode="horizontal">
@@ -28,7 +32,7 @@ const AppLayout = ({ children }) => {
       </Menu>
       <Row gutter={8}>
         <Col xs={24} md={6}>
-          왼쪽 메뉴
+          {isLoggedin ? <UserProfile /> : <LoginForm />}
         </Col>
         <Col xs={24} md={12}>
           {children}
