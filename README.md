@@ -453,3 +453,61 @@ const onChangePassword = useCallback(() => {
   setPassword(e.target.value);
 }, []);
 ```
+
+<br>
+
+> <br> useCallback <br>
+> useCallback은 함수를 캐싱 (또는 메모지에이션)할 때 사용하는 훅이다. useMemo는 특정 결과값을 재사용할때 사용하는 반면, useCallback은 특정 함수를 새로 만들지 않고 사용하고 싶을 때 사용한다. <br><Br>
+
+<br>
+
+### 리렌더링 이해하기
+
+<br>
+함수형 컴포넌트에서 리렌더링이 될 때는 함수안의 부분이 다시 실행되는 것은 맞지만, useCallback으로 감싸 준 함수는 캐싱이 되어서 이전 컴포넌트와 현재 컴포넌트가 같다고 인식하게 된다. return JSX 부분에서는 바뀐 부분만 다시 리렌더링이 된다. <br><br>
+그렇기 때문에 태그에 style 객체를 넣게 되면, 리렌더링 될 때마다 함수가 전체 실행이 되는데, style 쪽에 객체를 새로 생성한 것이므로 객체와 객체를 비교시에 false가 나온다.
+<br><br>
+
+```
+{} === {} //false
+```
+
+<br>
+리액트는 매번 Virtual DOM으로 이전 버전과의 변경점을 찾기 때문에 이전 버전과 객체가 다른 것을 감지하고 리렌더링을 하게 된다. 이 부분은 styled-components로 해결할 수 있다. 
+<br><br>
+
+```js
+import styled from "styled-components";
+(...)
+
+const ButtonWrapper = styled.div`
+  margin-top: 10;
+`;
+
+(...)
+
+<ButtonWrapper>
+    <Button type="primary" htmlType="submit" loading={false}>
+      로그인
+    </Button>
+    <Link href="/signup">
+      <a>
+        <Button>회원가입</Button>
+      </a>
+    </Link>
+</ButtonWrapper>
+```
+
+<br>
+만일 styled-components를 사용하고 싶지 않다면, useMemo를 사용하면 된다. 
+<br><br>
+
+```js
+const style = useMemo(() => ({marginTop: 10}), []);
+
+(...)
+
+<div style={style}> </div>
+
+(...)
+```
