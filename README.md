@@ -341,7 +341,7 @@ AppLayout.js에 Input 버튼을 추가하고, enterButton 이라는 props를 ant
 ```js
 <Row gutter={8}>
   <Col xs={24} md={6}>
-    왼쪽 메뉴
+    {isLoggedin ? <UserProfile /> : <LoginForm />}
   </Col>
   <Col xs={24} md={12}>
     {children}
@@ -359,4 +359,97 @@ AppLayout.js에 Input 버튼을 추가하고, enterButton 이라는 props를 ant
 
 <br>
 
-여기서 xs는 모바일, sm은 태블릿, md는 노트북, lg는 데스크탑과 같이 각각 px이 정해져 있다. 24로 나누는 이유는 나누어지는 숫자가 많기 때문이다. gutter는 각 column 사이의 padding을 지정해 준다. 각 column 끼리 너무 붙는 현상을 방지해 준다. a 태그로 새창을 열때는 `target="_blank`를 사용하는데, 이는 보안 위험이 있기 때문에 `rel="noreferrer noopener"`를 같이 지정해 주는 편이 좋다.
+여기서 xs는 모바일, sm은 태블릿, md는 노트북, lg는 데스크탑과 같이 각각 px이 정해져 있다. 24로 나누는 이유는 나누어지는 숫자가 많기 때문이다. gutter는 각 column 사이의 padding을 지정해 준다. 각 column 끼리 너무 붙는 현상을 방지해 준다. a 태그로 새창을 열때는 `target="_blank`를 사용하는데, 이는 보안 위험이 있기 때문에 `rel="noreferrer noopener"`를 같이 지정해 주는 편이 좋다. 현재는 데이터가 없기 때문에 state를 활용해 더미 데이터를 사용해 로그인 기능을 갖추어 놓았다.
+<br><br>
+
+### 로그인 폼 만들기
+
+<br>
+components 폴더에 LoginForm.js 파일을 생성한다.
+<br><br>
+
+```js
+import React, { useCallback, useState } from "react";
+import { Form, Input, Button } from "antd";
+import Link from "next/link";
+
+const LoginForm = () => {
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
+
+  const onChangeId = useCallback(() => {
+    setId(e.target.value);
+  }, []);
+
+  const onChangePassword = useCallback(() => {
+    setPassword(e.target.value);
+  }, []);
+
+  return (
+    <Form>
+      <div>
+        <label htmlFor="user-id">아이디</label>
+        <br />
+        <Input name="user-id" value={id} onChange={onChangeId} required />
+      </div>
+      <div>
+        <label htmlFor="user-password">비밀번호</label>
+        <br />
+        <Input
+          name="user-password"
+          type="password"
+          value={password}
+          onChange={onChangePassword}
+          required
+        />
+      </div>
+      <div>
+        <Button type="primary" htmlType="submit" loading={false}>
+          로그인
+        </Button>
+        <Link href="/signup">
+          <a>
+            <Button>회원가입</Button>
+          </a>
+        </Link>
+      </div>
+    </Form>
+  );
+};
+
+export default LoginForm;
+```
+
+<br>
+
+Label 태그에서 for 속성을 사용하기 위해서는 아래와 같이 정의해야 한다.
+<br><br>
+
+```js
+<label htmlFor="user-id">ID</label>
+```
+
+<br>
+
+Antd Button 태그에서 type 속성을 사용하기 위해서는 아래와 같이 정의해야 한다. 여기서 type 속성은 버튼의 색상을 의미한다.
+<br><br>
+
+```js
+<Button type="primary" htmlType="submit">
+  Signup
+</Button>
+```
+
+<br>
+또한 컴포넌트에서 Props로 넘겨지는 함수는 useCallback을 써주면 최적화가 이루어지기 때문에 써주는 것이 좋다.
+<br><br>
+
+```js
+const onChangeId = useCallback(() => {
+  setId(e.target.value);
+}, []);
+
+const onChangePassword = useCallback(() => {
+  setPassword(e.target.value);
+}, []);
+```
