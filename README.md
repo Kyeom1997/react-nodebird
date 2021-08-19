@@ -511,3 +511,87 @@ const style = useMemo(() => ({marginTop: 10}), []);
 
 (...)
 ```
+
+<br>
+
+### 더미 데이터로 로그인하기
+
+<br>
+
+LoginForm.js의 `<Button>` 태그에 `htmlType="submit"` 속성을 추가하고, 이를 감싸고 있는 `<Form>` 태그에 `onFinish={onSubmitForm}` 속성을 준다. 여기서 onFinish는 `e.preventDefault()`가 자동으로 내장되어 있다. 그렇기 때문에 추가적으로 쓰면 안된다.
+<br><br>
+
+AppLayout.js의 setIsLoggedIn 함수를 props로 넘겨 Loginform 파일로 전달하고
+<br><br>
+
+```js
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+(...)
+
+<Col xs={24} md={6}>
+  {isLoggedIn ? (
+    <UserProfile setIsLoggedIn={setIsLoggedIn} />
+  ) : (
+    <LoginForm setIsLoggedIn={setIsLoggedIn} />
+  )}
+</Col>
+```
+
+<br>
+
+LoginForm.js 에서 인자로 받게 된다.
+<br><br>
+
+```js
+const LoginForm = ({ setIsLoggedIn }) => {
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
+
+(...)
+ const onSubmitForm = useCallback(() => {
+    console.log(id, password);
+    setIsLoggedIn(true);
+  }, [id, password]);
+```
+
+<br>
+이렇게 하면 onSubmitForm 함수에서 버튼이 눌리게 되면, setLoggedIn 함수가 true가 되어 더미 데이터로 로그인 기능이 활성화 되게 된다.
+<br><br>
+
+UseProfile.js에서는 antd에서 Card 컴포넌트를 가져와 로그인 시 사용자의 여러 정보들을 표시할 수 있게 구현해 주었다.
+<br><br>
+
+```js
+const UserProfile = ({ setIsLoggedIn }) => {
+  const onLogOut = useCallback(() => {
+    setIsLoggedIn(false);
+  }, []);
+  return (
+    <Card
+      actions={[
+        <div key="twit">
+          짹짹
+          <br />0
+        </div>,
+        <div key="followings">
+          팔로잉
+          <br />0
+        </div>,
+        <div key="followers">
+          팔로워
+          <br />0
+        </div>,
+      ]}
+    >
+      <Card.Meta avatar={<Avatar>HK</Avatar>} title="Kyeom" />
+      <Button onClick={onLogOut}>로그아웃</Button>
+    </Card>
+  );
+};
+
+export default UserProfile;
+```
+
+<br>
+리액트에서 배열 안에 JSX를 사용하고 싶을 때는 해당 예시처럼 key 값을 지정해 주어야 한다. 마찬가지로 UserProfile.js에서 역시 로그아웃 버튼을 클릭시 setLoggedIn이 false가 되게 하여 더미 데이터로 로그아웃 기능을 활성화 시켜 주었다.
