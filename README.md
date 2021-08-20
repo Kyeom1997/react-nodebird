@@ -595,3 +595,97 @@ export default UserProfile;
 
 <br>
 리액트에서 배열 안에 JSX를 사용하고 싶을 때는 해당 예시처럼 key 값을 지정해 주어야 한다. 마찬가지로 UserProfile.js에서 역시 로그아웃 버튼을 클릭시 setLoggedIn이 false가 되게 하여 더미 데이터로 로그아웃 기능을 활성화 시켜 주었다.
+<br><br>
+
+### 프로필 페이지 만들기
+
+<br>
+
+profile.js의 `<AppLayout>` 컴포넌트 사이에 `<NicknameEditForm />`, `<FollowList header="팔로잉 목록" data={followingList} />`, `<FollowList header="팔로워 목록" data={followerList}/>`와 같은 컴포넌트들을 추가해 주었다. 이 팔로잉, 팔로워 목록에 들어갈 데이터 들은 컴포넌트 상단에 더미 데이터로 구현해 두었다.
+<br><br>
+
+```js
+const followerList = [
+  { nickname: "김형겸" },
+  { nickname: "이준희" },
+  { nickname: "김은정" },
+];
+const followingList = [
+  { nickname: "김형겸" },
+  { nickname: "이준희" },
+  { nickname: "김은정" },
+];
+```
+
+<br>
+이렇게 우선 가상의 컴포넌트를 생성하고, 더미 데이터를 생성하여 틀을 잡아둔 후, 세부 구현을 하는 편이 훨씬 효율적이고 리액트에 익숙해지는 방법이 될 수 있다. 이제 미리 추가해 둔, NicknameEditForm.js와 FollowList.js를 구현하면 된다. 실무에서는 Form을 일일히 만드는 것은 비효율적이니 React Form과 같은 것들을 사용하는 편이 좋다.
+<br><br>
+
+```js
+import React, { useMemo } from "react";
+import { Form, Input } from "antd";
+
+const NicknameEditForm = () => {
+  const style = useMemo(
+    () => ({
+      marginBottom: "20px",
+      border: "1px solid #d9d9d9",
+      padding: "20px",
+    }),
+    []
+  );
+
+  return (
+    <Form style={style}>
+      <Input.Search addonBefore="닉네임" enterButton="수정" />
+    </Form>
+  );
+};
+
+export default NicknameEditForm;
+```
+
+<br>
+
+```js
+import React from "react";
+import { Card, List, Button } from "antd";
+import Item from "antd/lib/list/Item";
+import PropTypes from "prop-types";
+import { StopOutlined } from "@ant-design/icons";
+
+const FollowList = ({ header, data }) => {
+  return (
+    <List
+      style={{ marginBottom: 20 }}
+      grid={{ gutter: 4, xs: 2, md: 3 }}
+      size="small"
+      header={<div>{header}</div>}
+      loadMore={
+        <div style={{ textAlign: "center", margin: "10px 0" }}>
+          <Button>더 보기</Button>
+        </div>
+      }
+      bordered
+      dataSource={data}
+      renderItem={(item) => (
+        <List.Item style={{ marginTop: 20 }}>
+          <Card actions={[<StopOutlined key="stop" />]}>
+            <Card.Meta description={item.nickname} />
+          </Card>
+        </List.Item>
+      )}
+    />
+  );
+};
+
+FollowList.propTypes = {
+  header: PropTypes.string.isRequired,
+  data: PropTypes.array.isRequired,
+};
+export default FollowList;
+```
+
+<br>
+
+여기서 아이콘은 antd가 아니라 `@ant-design/icons`에서 가져와 사용하면 된다. 또한 팔로워와 팔로잉 컴포넌트가 같은데, props 개수가 많지 않으면 같은 컴포넌트에서 props만 다르게 해서 구현해도 괜찮다.
