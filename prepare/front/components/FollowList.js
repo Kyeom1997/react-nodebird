@@ -1,7 +1,8 @@
 import React from "react";
-import { Card, List } from "antd";
+import { Card, List, Button } from "antd";
 import Item from "antd/lib/list/Item";
 import PropTypes from "prop-types";
+import { StopOutlined } from "@ant-design/icons";
 
 const FollowList = ({ header, data }) => {
   return (
