@@ -689,3 +689,166 @@ export default FollowList;
 <br>
 
 여기서 아이콘은 antd가 아니라 `@ant-design/icons`에서 가져와 사용하면 된다. 또한 팔로워와 팔로잉 컴포넌트가 같은데, props 개수가 많지 않으면 같은 컴포넌트에서 props만 다르게 해서 구현해도 괜찮다.
+<br><br>
+
+### 회원가입 페이지 만들기 (커스텀 훅)
+
+<br>
+
+```js
+import React, { useCallback, useState } from "react";
+import Head from "next/head";
+import styled from "styled-components";
+import { Form, Input, Checkbox, Button } from "antd";
+
+import AppLayout from "../components/AppLayout";
+import useInput from "../hooks/useInput";
+const ErrorMessage = styled.div`
+  color: red;
+`;
+
+const Signup = () => {
+  const [id, onChangeId] = useInput("");
+  const [nickname, onChangeNickname] = useInput("");
+  const [password, onChangePassword] = useInput("");
+  const [passwordCheck, setPasswordCheck] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+  const onChangePasswordCheck = useCallback(
+    (e) => {
+      setPasswordCheck(e.target.value);
+      setPasswordError(e.target.value !== password);
+    },
+    [password]
+  );
+  const [term, setTerm] = useState("");
+  const [termError, setTermError] = useState(false);
+  const onChangeTerm = useCallback((e) => {
+    setTerm(e.target.checked);
+    setTermError(false);
+  }, []);
+
+  const onSubmit = useCallback(() => {
+    if (password !== passwordCheck) {
+      return setPasswordError(true);
+    }
+    if (!term) {
+      return setTermError(true);
+    }
+    console.log(id, nickname, password);
+  }, [password, passwordCheck, term]);
+
+  return (
+    <AppLayout>
+      <Head>
+        <title>회원 가입 | NodeBird</title>
+      </Head>
+      <Form onFinish={onSubmit}>
+        <div>
+          <label htmlFor="user-id">아이디</label>
+          <br />
+          <Input name="user-id" value={id} required onChange={onChangeId} />
+        </div>
+        <div>
+          <label htmlFor="user-nickname">닉네임</label>
+          <br />
+          <Input
+            name="user-nickname"
+            value={nickname}
+            required
+            onChange={onChangeNickname}
+          />
+        </div>
+        <div>
+          <label htmlFor="user-password">비밀번호</label>
+          <br />
+          <Input
+            name="user-password"
+            type="password"
+            value={password}
+            required
+            onChange={onChangePassword}
+          />
+        </div>
+        <div>
+          <label htmlFor="user-password-check">비밀번호체크</label>
+          <br />
+          <Input
+            name="user-password-check"
+            type="password"
+            value={passwordCheck}
+            required
+            onChange={onChangePasswordCheck}
+          />
+          {passwordError && (
+            <ErrorMessage>비밀번호가 일치하지 않습니다.</ErrorMessage>
+          )}
+        </div>
+        <div>
+          <Checkbox name="user-term" checked={term} onChange={onChangeTerm}>
+            약관에 동의합니다.
+          </Checkbox>
+          {termError && <ErrorMessage>약관에 동의하셔야 합니다.</ErrorMessage>}
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <Button type="primary" htmlType="submit">
+            가입하기
+          </Button>
+        </div>
+      </Form>
+    </AppLayout>
+  );
+};
+
+export default Signup;
+```
+
+<br>
+회원가입 페이지인 signup.js를 구현했다. antd의 Form, Input, Checkbox, Button을 활용했으며, 중복되는 useState 구문들은 별도의 커스텀 Hooks를 생성하여 불러왔다. 
+<br><br>
+
+```js
+import { useState, useCallback } from "react";
+
+export default (initValue = null) => {
+  const [value, setter] = useState(initValue);
+  const handler = useCallback((e) => {
+    setter(e.target.value);
+  }, []);
+  return [value, handler];
+};
+```
+
+<br>
+
+대부분의 아이디, 닉네임, 비밀번호 Form에서 중복되는 State들을 이렇게 커스텀 Hooks로 만들어 사용하면 번거롭게 여러 번 useState를 통해 입력하지 않아도 단순히 `const [id, onChangeId] = useInput("");` 과 같이 간단한 문장으로 구현할 수 있다. 다만, 해당 컴포넌트에서 비밀번호 체크와 약관 동의 기능은 중복되지 않는 문장이므로 커스텀 Hooks를 사용하지 않고 별도로 입력하였다.
+<br><br>
+
+```js
+const [passwordCheck, setPasswordCheck] = useState("");
+const [passwordError, setPasswordError] = useState(false);
+const onChangePasswordCheck = useCallback(
+  (e) => {
+    setPasswordCheck(e.target.value);
+    setPasswordError(e.target.value !== password);
+  },
+  [password]
+);
+const [term, setTerm] = useState("");
+const [termError, setTermError] = useState(false);
+const onChangeTerm = useCallback((e) => {
+  setTerm(e.target.checked);
+  setTermError(false);
+}, []);
+```
+
+<br>
+
+해당 구문에서 발생되는 에러들은 `{termError && <ErrorMessage>약관에 동의하셔야 합니다.</ErrorMessage>}`, `{passwordError && ( <ErrorMessage>비밀번호가 일치하지 않습니다.</ErrorMessage> )}` 와 같이 활용할 수 있다. `<ErrorMessage>` 태그는 styled-componenets를 활용한 태그이다.
+<br><br>
+
+![Hnet com-image](https://user-images.githubusercontent.com/78855917/130360875-cd268bf3-7fa2-463f-97ad-b467fb6e918b.gif)
+<br>
+
+![gdrd](https://user-images.githubusercontent.com/78855917/130360912-b8c83a19-56bd-491e-846e-431269d0a9cd.jpg)
+
+회원가입 기능이 잘 되는것을 알 수 있다.
