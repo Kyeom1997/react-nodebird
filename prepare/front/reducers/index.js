@@ -1,23 +1,52 @@
+import { HYDRATE } from "next-redux-wrapper";
+
 const initialState = {
-  name: "kyeom",
-  age: 25,
-  password: "!godroa0531",
+  user: {
+    isLoggedIn: false,
+    user: null,
+    signUpData: {},
+    loginData: {},
+  },
+  post: {
+    mainPosts: [],
+  },
 };
 
-const changeNickname = (data) => {
+export const loginAction = (data) => {
   return {
-    type: "CHANGE_NICKNAME",
+    type: "LOG_IN",
     data,
+  };
+};
+
+export const logoutAction = () => {
+  return {
+    type: "LOG_OUT",
   };
 };
 
 // (이전상태, 액션) => 다음상태
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
-    case "CHANGE_NICKNAME":
+    case HYDRATE:
+      return { ...state, ...action.payload };
+    case "LOG_IN":
       return {
         ...state,
-        name: action.data,
+        user: {
+          ...state.user,
+          isLoggedIn: true,
+          user: action.data,
+        },
+      };
+    case "LOG_OUT":
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          isLoggedIn: false,
+          user: null,
+        },
       };
   }
 };
