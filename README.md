@@ -1162,3 +1162,105 @@ export default wrapper;
 <br><br>
 
 ![12345](https://user-images.githubusercontent.com/78855917/130797134-667a4bed-5fd4-4fc0-a3e9-27f7f976ac54.jpg)
+
+<br>
+
+### 리듀서 쪼개기
+
+<br>
+지금까지는 index.js에 단순히 user의 loginAction과 logoutAction만 구현해 그리 복잡하지 않았지만, 이러한 상태 변경들이 많아질 수록 case 부분이 엄청나게 많아져 복잡해질 수 있다. 그렇기 때문에 리듀서를 쪼갤 필요가 있다.
+<br><br>
+우선, index의 데이터 안에 user와 post가 있으니 이를 기준으로 reducers 폴더에 user.js, post.js 파일을 생성해 준다. 그 후에 index.js에 있는 initialState 객체의 부분들을 해당 폴더로 복사해주고 action과 reducer 역시 각 폴더들로 이동시켜 준다. 여기서 reducer를 옮길때 주의해야 하는것이 있는데, initialState를 분리할 때 이미 Depth가 낮아졌으므로 reducer 쪽에서 Depth가 들어가 있는 부분들을 빼주어야 한다.
+<br><Br>
+
+```js
+//user.js
+export const initialState = {
+  isLoggedIn: false,
+  user: null,
+  signUpData: {},
+  loginData: {},
+};
+
+export const loginAction = (data) => {
+  return {
+    type: "LOG_IN",
+    data,
+  };
+};
+
+export const logoutAction = () => {
+  return {
+    type: "LOG_OUT",
+  };
+};
+
+const reducer = (state = initialState, action) => {
+  switch (action.type) {
+    case "LOG_IN":
+      return {
+        ...state,
+        isLoggedIn: true,
+        user: action.data,
+      };
+    case "LOG_OUT":
+      return {
+        ...state,
+        isLoggedIn: false,
+        user: null,
+      };
+    default:
+      return state;
+  }
+};
+
+export default reducer;
+```
+
+<br>
+
+```js
+//post.js
+export const initialState = {
+  mainPosts: [],
+};
+
+const reducer = (state = initialState, action) => {
+  switch (action.type) {
+    default:
+      return state;
+  }
+};
+
+export default reducer;
+```
+
+<br>
+이제 index.js에 user.js와 post.js를 합쳐야 하는데, 먼저 각 파일들을 import 해준 뒤에 combineReducer라는 리듀서를 합쳐주는 메서드를 통해 합쳐 준다. 다만 index.js에는 서버사이드 렌더링을 위해 HYDRATE라는 액션이 있으니 index 리듀서를 하나 더 추가해 주어야 한다. 그 후에는 LoginForm.js와 UserProfile.js의 action 경로를 수정해 준다.
+<br><br>
+
+```js
+import { HYDRATE } from "next-redux-wrapper";
+import user from "./user";
+import post from "./post";
+import { combineReducers } from "redux";
+
+//initialState는 필요없어 졌으니 삭제한다.
+
+// (이전상태, 액션) => 다음상태
+const rootReducer = combineReducers({
+  index: (state = {}, action) => {
+    switch (action.type) {
+      case HYDRATE:
+        return { ...state, ...action.payload };
+
+      default:
+        return state;
+    }
+  },
+  user,
+  post,
+});
+
+export default rootReducer;
+```
