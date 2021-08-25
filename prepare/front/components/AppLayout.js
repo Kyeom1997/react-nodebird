@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import Link from "next/link";
 import styled from "styled-components";
 import { Input, Menu, Row, Col } from "antd";
+import initialState from "../reducers";
 
 import UserProfile from "../components/UserProfile";
 import LoginForm from "../components/LoginForm";
