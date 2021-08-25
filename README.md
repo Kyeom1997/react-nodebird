@@ -1264,3 +1264,180 @@ const rootReducer = combineReducers({
 
 export default rootReducer;
 ```
+
+<br>
+
+### 더미데이터와 포스트폼 만들기
+
+<br>
+
+```js
+export const initialState = {
+  mainPosts: [
+    {
+      id: 1,
+      User: {
+        id: 1,
+        nickname: "행갬",
+      },
+      content: "첫 번째 게시글 #해시태그 #익스프레스",
+      Images: [
+        {
+          src: "https://bookthumb-phinf.pstatic.net/cover/137/995/13799585.jpg?udate=20180726",
+        },
+        {
+          src: "https://gimg.gilbut.co.kr/book/BN001958/rn_view_BN001958.jpg",
+        },
+        {
+          src: "https://gimg.gilbut.co.kr/book/BN001998/rn_view_BN001998.jpg",
+        },
+      ],
+      Comments: [
+        {
+          User: {
+            nickname: "nero",
+          },
+          content: "안녕하세요~",
+        },
+        {
+          User: {
+            nickname: "hero",
+          },
+          content: "반갑습니다~",
+        },
+      ],
+    },
+  ],
+  imagePaths: [],
+  postAdded: false,
+};
+```
+
+<br>
+post.js에 더미 데이터를 만들었다. 여기서 mainPost 안에 id, content는 시작이 소문자인데, User, Image, Comment는 대문자로 시작하는 이유는 DB에서 사용하는 시퀄라이즈와 관계가 있다. 시퀄라이즈에서 어떤 정보와 다른 정보 사이의 관계가 있으면 그것들을 합쳐주게 되는데 그 과정에서 대문자로 출력된다. 그렇기 때문에 만약 자신이 프론트엔드 개발자라면 서버 개발자와 사전에 합의를 해서 서버 쪽에서 데이터를 어떤 식으로 보낼건지 미리 정해두는 편이 좋다.
+<br><br>
+
+```js
+const ADD_POST = "ADD_POST";
+export const addPost = {
+  type: ADD_POST,
+};
+
+const dummyPost = {
+  id: 2,
+  content: "더미 데이터 입니다.",
+  User: {
+    id: 1,
+    nickname: "행갬",
+  },
+  Images: [],
+  Comments: [],
+};
+
+const reducer = (state = initialState, action) => {
+  switch (action.type) {
+    case ADD_POST:
+      return {
+        ...state,
+        // 불변성을 지키며 dummyPost를 앞에 추가해야 게시글 위로 올라간다.
+        mainPosts: [dummyPost, ...state.mainPosts],
+        postAdded: true,
+      };
+    default:
+      return state;
+  }
+};
+
+export default reducer;
+```
+
+<br>
+그 다음에는 post의 action을 만들었는데, 액션의 이름을 상수로 빼주는 편이 재활용도 가능하고 오타를 방지하기 때문에 좋다. 지금은 서버가 없기 때문에 가짜 게시물 데이터를 만들어서 리듀서에 추가해 주었다. 여기서 mainPosts에 dummyPost를 앞에 두어야 게시글 위로 올라간다.
+<br><br>
+
+```js
+import React from "react";
+import AppLayout from "../components/AppLayout";
+import { useSelector } from "react-redux";
+import PostForm from "../components/PostForm";
+import PostCard from "../components/PostCard";
+
+const Home = () => {
+  const { isLoggedIn } = useSelector((state) => state.user);
+  const { mainPosts } = useSelector((state) => state.post);
+  return (
+    <AppLayout>
+      {isLoggedIn && <PostForm />}
+      {mainPosts.map((post) => (
+        <PostCard key={post.id} post={post} />
+      ))}
+    </AppLayout>
+  );
+};
+
+export default Home;
+```
+
+<br>
+pages 폴더의 index.js 파일이다. isLoggedIn과 mainPosts를 useSelector를 통해 비구조화 할당으로 들고 왔으며, 로그인 상태일때만 PostForm이 보이게 하고 mainPosts의 데이터를 이용해 map 함수로 이를 반복되게 만들었다. map을 사용할때는 key 값이 필요한데 게시물은 변할 수 있는 데이터이기 때문에 index를 key 값으로 사용하지 않고 post의 id를 key값으로 사용하였다. 
+<br><br>
+
+```js
+import { Form, Input, Button } from "antd";
+import React, { useCallback, useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { addPost } from "../reducers/post";
+
+const PostForm = () => {
+  const { imagePaths } = useSelector((state) => state.post);
+  const dispatch = useDispatch();
+  const imageInput = useRef();
+  const [text, setText] = useState("");
+  const onChangeText = useCallback((e) => {
+    setText(e.target.value);
+  }, []);
+  const onSubmit = useCallback(() => {
+    dispatch(addPost);
+    setText("");
+  }, []);
+  const onClickImageUpload = useCallback(() => {
+    imageInput.current.click();
+  }, [imageInput.current]);
+  return (
+    <Form
+      style={{ margin: "10px 0 20px" }}
+      encType="multipart/form-data"
+      onFinish={onSubmit}
+    >
+      <Input.TextArea
+        value={text}
+        onChange={onChangeText}
+        maxLength={140}
+        placeholder="어떤 신기한 일이 있었나요?"
+      />
+      <div>
+        <input type="file" multiple hidden ref={imageInput} />
+        <Button onClick={onClickImageUpload}>이미지 업로드</Button>
+        <Button type="primary" style={{ float: "right" }} htmlType="submit">
+          짹짹
+        </Button>
+      </div>
+      <div>
+        {imagePaths.map((v) => (
+          <div key={v} style={{ display: "inline-block" }}>
+            <img src={v} style={{ width: "200px" }} alt={v} />
+            <div>
+              <Button>제거</Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Form>
+  );
+};
+
+export default PostForm;
+```
+
+<br>
+PostForm.js 파일이다. 짹짹 버튼을 클릭시 onSubmit이 되어 addPost 액션이 실행된다. 여기서 이미지 업로드 버튼을 구현하기 위해서는 useRef를 활용해야 하는데, 이는 DOM에 직접적으로 접근할때 사용한다.
