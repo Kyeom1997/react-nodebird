@@ -1119,3 +1119,46 @@ const LoginForm = () => {
     dispatch(loginAction({ id, password }));
   }, [id, password]);
 ```
+
+<br>
+
+### 미들웨어와 리덕스 데브툴즈
+
+<br>
+
+브라우저의 개발자 도구에서 redux tools를 사용하려면 `npm i redux-devtools-extension`을 통해 설치를 한 후, configureStore.js에 배포용과 개발용일때의 조건문을 설정한 후 개발용에만 composeWithDevTools를 넣어주면 된다. 히스토리가 많이 쌓이게 되면 메모리도 많이 차지하고, 중앙 데이터들의 변경 값이 모두 나오기 때문에 개발용일때만 사용한다. 이렇게 만든 enhancer 함수를 store 변수의 createStore 두번째 인자값으로 넣어준다.
+<br><br>
+
+```js
+import { createWrapper } from "next-redux-wrapper";
+import { applyMiddleware, createStore, compose } from "redux";
+import { composeWithDevTools } from "redux-devtools-extension";
+
+import reducer from "../reducers";
+
+const configureStore = () => {
+  const middlewares = [];
+  const enhancer =
+    process.env.NODE_ENV === "production"
+      ? compose(applyMiddleware(...middlewares))
+      : composeWithDevTools(applyMiddleware(...middlewares));
+  const store = createStore(reducer, enhancer);
+  store.dispatch({
+    type: "CHANGE_NICKNAME",
+    data: "hang_kem",
+  });
+  return store;
+};
+
+const wrapper = createWrapper(configureStore, {
+  debug: process.env.NODE_ENV === "development",
+});
+
+export default wrapper;
+```
+
+<br>
+이때 middlewares라는 변수를 만들고 applyMiddleware에 ...middlewares를 넣어줘야 한다. 이렇게 하면 불변성이 지켜지기 때문에 개발자 도구 redux의 history 값을 정상적으로 확인할 수 있다.
+<br><br>
+
+![12345](https://user-images.githubusercontent.com/78855917/130797134-667a4bed-5fd4-4fc0-a3e9-27f7f976ac54.jpg)
