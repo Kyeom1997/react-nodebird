@@ -875,3 +875,247 @@ const onChangeTerm = useCallback((e) => {
 <br><br>
 
 next에 리덕스를 붙이려면 `npm i next-redux-wrapper`를 사용해야 한다.
+<br><br>
+
+> <br> Context API로 redux나 Mobx가 대체될까?
+> <br><br>
+> 서버에서 데이터를 받아 오는 것은 항상 비동기이기 때문에 실패에 대비해야 한다. 비동기는 요청, 성공, 실패의 3단계로 나뉜다. context api에서 구현을 하게 되면, 직접 다 구현을 해주어야 하는데 컴포넌트 안에서 fetch나 axios로 데이터를 요청하게 된다.
+> <br><br>
+> 컴포넌트에서는 화면을 그리는데 집중을 하고, 데이터 요청은 별도의 모듈이나 라이브러리가 하는 것이 좋으므로 컴포넌트 안에서 데이터를 따로 분리하려고 하면 결국 redux나 mobx 모두 비슷한 구조로 나오기 때문에 처음부터 redux나 mobx를 사용하는 편이 좋다.
+> <br><br>
+
+<br>
+
+### Redux의 원리
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/130620814-5752a29d-2044-4b2b-8092-9cf7b39a720a.png)
+<br>
+
+상태에 어떠한 변화가 필요하면 액션(action)이라는 것이 발생한다. 이는 하나의 객체로 표현되고, 반드시 type 필드를 가지고 있어야 한다. 이 값은 액션의 이름이라고 생각하면 된다.
+<br><br>
+
+```js
+{
+  type: 'CHANGE_NICKNAME',
+  data: 'hang_kem'
+}
+```
+
+<br>
+
+이 액션은 dispatch라는 스토어의 내장 함수로 발생되는데, 이 함수는 `dispatch(action)`과 같은 형태로 액션 객체를 파라미터로 넣어서 호출한다. 이렇게 액션을 만들어 발생시키면 리듀서(reducer)라는 함수가 현재 상태와 전달받은 액션 객체를 파라미터로 받아오는데, 그 후에 두 값을 참고하여 새로운 상태를 만들어 반환해 준다.
+<br><br>
+
+```js
+switch(action.type) {
+  case 'CHANGE_NICKNAME' :
+    return {
+      ...state,
+      name: action.data,
+    }
+}
+  case 'CHANGE_AGE' :
+    return {
+      ...state,
+      age: action.data,
+    }
+}
+```
+
+<br>
+
+여기서 `...state`를 해주는 이유는 리액트의 불변성(Immutability) 때문인데, 유지해야 되는 것들은 <b>참조 관계</b>로 해두고, <b>변경해야 할 데이터들은 바꾸는 것</b>으로 리덕스를 쓰는 목적이다.
+<br><br>
+
+```js
+{} === {} //객체끼리 비교하면 false가 나옴.
+// 그렇기 때문에 아래의 경우에도 prev, next의 name이 전부 남아있다.
+const prev = { name: 'kyeom' }
+const next = { name: 'hang_kem' }
+
+const a = {}
+const b = a;
+a === b;
+// 참조관계가 있으면 true로 나옴.
+// 그렇기 때문에 참조를 할 경우에는 next의 name값을 바꾸면 prev의 name값도 바뀌어 history가 사라짐.
+
+const next = prev
+next.name = 'hang_kem'
+prev.name // 'hang_kem'
+```
+
+<br>
+
+### 리덕스 실제 구현하기
+
+<br>
+
+프로젝트 폴더에 store 폴더를 만들고 `configureStore.js` 파일을 생성한다.
+<br><br>
+
+```js
+import { createWrapper } from "next-redux-wrapper";
+
+const configrueStore = () => {};
+
+const wrapper = createWrapper(configureStore, {
+  debug: process.env.NODE_ENV === "development",
+});
+
+export default wrapper;
+```
+
+<br>
+
+createWrapper의 두 번째 인자는 옵션 객체이며, debug 부분이 true일 경우에는 리덕스에 관한 자세한 설명이 나오므로 개발시에는 true로 설정하는 편이 좋다. configureStore.js 생성 후에는 page의 \_app.js의 마지막 줄을 `export default wrapper.withRedux(App)`으로 변경해준다.
+<br><br>
+
+이제 configureStore.js에서 store 설정을 해준다. store는, reducer와 state를 포함한 것을 뜻한다. 이때 `npm i redux`로 redux 설치를 해주어야 한다.
+<br><br>
+
+```js
+import { createWrapper } from "next-redux-wrapper";
+import { createStore } from "redux";
+
+const configrueStore = () => {
+  const store = createStore(reducer);
+  return store;
+};
+
+const wrapper = createWrapper(configureStore, {
+  debug: process.env.NODE_ENV === "development",
+});
+
+export default wrapper;
+```
+
+<br>
+이제 액션 상태를 만들어주기 위해 reducers 폴더에 index.js를 생성한다.
+<br><br>
+
+```js
+const initialState = {
+  user: {
+    isLoggedIn: false,
+    user: null,
+    signUpData: {},
+    loginData: {},
+  },
+  post: {
+    mainPosts: [],
+  },
+};
+
+export const loginAction = (data) => {
+  return {
+    type: "LOG_IN",
+    data,
+  };
+};
+
+export const logoutAction = () => {
+  return {
+    type: "LOG_OUT",
+  };
+};
+
+// (이전상태, 액션) => 다음상태
+const rootReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case "LOG_IN":
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          isLoggedIn: true,
+          user: action.data,
+        },
+      };
+    case "LOG_OUT":
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          isLoggedIn: false,
+          user: null,
+        },
+      };
+    default:
+      return state;
+  }
+};
+
+export default rootReducer;
+```
+
+<br>
+이렇게 초기 앱에 대한 데이터 구조를 설정하였다. 여기서 initialState는 기존의 데이터를 뜻하고 action creator 함수를 통해 액션을 설정하면, rootReducer의 switch 문을 통해 이전상태와 액션으로 다음 상태를 업데이트 해줄 수 있게 된다. 즉, 로그인 액션을 만들어서 dispatch를 하면 isLoggedIn이 true가 되고 user에 동적으로 받아온 데이터가 들어가는 기능이 여기서 실행되는 것이다. 
+<br><br>
+
+> <br> action creator 함수
+> <br><br>
+> 데이터를 변경하고 싶으며 액션을 만들어 주어야 하는데, 액션의 type은 같지만 data만 달라지는 경우에는 매번 액션을 만들어 주는 것이 비효율적이다. 이럴때는 함수를 통해 액션을 만들어 주는데, 이를 동적 액션, 또는 액션 생성기 함수라고 한다.
+> <br><br>
+
+```js
+const changeNickname = {
+  type: "CHANGE_NICKNAME",
+  data: "hang_kem1",
+};
+
+const changeNickname = {
+  type: "CHANGE_NICKNAME",
+  data: "hang_kem2",
+};
+
+const changeNickname = {
+  type: "CHANGE_NICKNAME",
+  data: "hang_kem3",
+};
+// 이렇게 만드는 것은 비효율적이다.
+
+const changeNickname = (data) => {
+  return {
+    type: "CHANGE_NICKNAME",
+    data,
+  };
+};
+// 액션 생성 함수를 이용하면 간단하게 구현할 수 있다.
+```
+
+<br>
+
+이제 첫 액션에 대한 dispatch를 할 차례이다. redux에서 중앙 데이터 관리소 역할을 해주기 때문에 AppLayout.js의 isLoggedIn이라는 useState는 더 이상 필요가 없어졌다. react-redux를 import 한 후, isLoggedIn을 react-redux의 useSelector를 이용하여 state.user.isLoggedIn을 받아온다. 이렇게 하면 isLoggedIn이 바뀔 시 알아서 AppLayout 함수가 리렌더링 된다.
+<br><br>
+
+```js
+//AppLayout.js
+import { useSelector } from "react-redux";
+(...)
+
+const AppLayout = ({ children }) => {
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+(...)
+```
+
+<br>
+이제 부모 컴포넌트에서 자식 컴포넌트들에게로 주었던 props를 지운 뒤 자식 컴포넌트로 가서 setIsLoggedIn(true)를 dispatch(loginAction(id, password))로 변경해 준다. 로그아웃 액션도 마찬가지의 방법으로 진행해 주면 된다.
+<br><br>
+
+```js
+//LoginForm.js
+import { useDispatch } from "react-redux";
+import { loginAction } from "../reducers";
+(...)
+const LoginForm = () => {
+  const dispatch = useDispatch();
+  const [id, onChangeId] = useInput("");
+  const [password, onChangePassword] = useInput("");
+
+  const onSubmitForm = useCallback(() => {
+    console.log(id, password);
+    dispatch(loginAction({ id, password }));
+  }, [id, password]);
+```
