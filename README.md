@@ -1441,3 +1441,105 @@ export default PostForm;
 
 <br>
 PostForm.js 파일이다. 짹짹 버튼을 클릭시 onSubmit이 되어 addPost 액션이 실행된다. 여기서 이미지 업로드 버튼을 구현하기 위해서는 useRef를 활용해야 하는데, 이는 DOM에 직접적으로 접근할때 사용한다.
+<br><br>
+
+### 게시글 구현하기
+
+<br>
+
+postCard 컴포넌트를 통해 게시글 기능을 구현하였다.
+<br><br>
+
+```js
+import React, { useCallback, useState } from "react";
+import PropTypes from "prop-types";
+import { Card, Popover, ButtonGroup, Button } from "antd";
+import {
+  RetweetOutlined,
+  HeartOutlined,
+  MessageOutlined,
+  EllipsisOutlined,
+  HeartTwoTone,
+} from "@ant-design/icons";
+import { useSelector } from "react-redux";
+import Avatar from "antd/lib/avatar/avatar";
+import PostImages from "./PostImages";
+
+const PostCard = ({ post }) => {
+  const [liked, setLiked] = useState(false);
+  const [commentFormOpened, setCommentFormOpened] = useState(false);
+  const onToggleLike = useCallback(() => {
+    setLiked((prev) => !prev);
+  }, []);
+  const onToggleComment = useCallback(() => {
+    setCommentFormOpened((prev) => !prev);
+  }, []);
+  const id = useSelector((state) => state.user.me?.id);
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <Card
+        cover={post.Images[0] && <PostImages images={post.Images} />}
+        actions={[
+          <RetweetOutlined key="retweet" />,
+          liked ? (
+            <HeartTwoTone
+              twoToneColor="#eb2f96"
+              key="heart"
+              onClick={onToggleLike}
+            />
+          ) : (
+            <HeartOutlined key="heart" onClick={onToggleLike} />
+          ),
+          <MessageOutlined key="comment" onClick={onToggleComment} />,
+          <Popover
+            key="more"
+            content={
+              <Button.Group>
+                {id && post.User.id === id ? (
+                  <>
+                    <Button>수정</Button>
+                    <Button type="danger">삭제</Button>
+                  </>
+                ) : (
+                  <Button>신고</Button>
+                )}
+              </Button.Group>
+            }
+          >
+            <EllipsisOutlined />
+          </Popover>,
+        ]}
+      >
+        <Card.Meta
+          avatar={<Avatar>{post.User.nickname[0]}</Avatar>}
+          title={post.User.nickname}
+          description={post.content}
+        />
+      </Card>
+      {commentFormOpened && <div>댓글 부분</div>}
+      {/*<CommentForm />*/}
+      {/*<Comments />*/}
+    </div>
+  );
+};
+
+PostCard.propTypes = {
+  post: PropTypes.shape({
+    id: PropTypes.number,
+    User: PropTypes.object,
+    content: PropTypes.string,
+    createdAt: PropTypes.object,
+    Comments: PropTypes.arrayOf(PropTypes.object),
+    Images: PropTypes.arrayOf(PropTypes.object),
+  }).isRequired,
+};
+
+export default PostCard;
+```
+
+<br>
+
+게시글의 각종 Form이나 Icon들은 antd를 이용해 불러왔다. 여기서 reducers의 user.js에서 user 값을 me로 바꾸었는데, 이렇게 로그인 한 id를 useSelector를 통해 불러오게 된다. 만일 `id && post.User.id === id`, 즉 로그인한 id값과 게시글의 id가 같다면 수정, 삭제 버튼 기능이 활성화되고, 그렇지 않다면 신고 기능만 활성화되게 하는 switch문을 구현하였다. 이는 마우스 커서를 가져다 대면 나오는 PopOver를 통해 확인할 수 있다. 또한, 원래는 서버 통신을 통해 진행해야 하지만 일시적으로 State를 활용해 onClick 이벤트로 heart 버튼이 onClick시 HeartTwoTone이 되게, commentForm이 Open 되게 구현하였다. 여기서 기억해야 할 점은, Toggle, 즉 false를 true로, true를 false로 되게 하는 기능은 `setLiked((prev) => !prev);`를 통해 진행된다는 점이다.
+
+![ezgif-2-001e57abcc80](https://user-images.githubusercontent.com/78855917/131004522-460891ce-2c2e-4b85-bbb3-9c038d7239f5.gif)
