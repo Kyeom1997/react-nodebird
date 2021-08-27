@@ -1543,3 +1543,75 @@ export default PostCard;
 게시글의 각종 Form이나 Icon들은 antd를 이용해 불러왔다. 여기서 reducers의 user.js에서 user 값을 me로 바꾸었는데, 이렇게 로그인 한 id를 useSelector를 통해 불러오게 된다. 만일 `id && post.User.id === id`, 즉 로그인한 id값과 게시글의 id가 같다면 수정, 삭제 버튼 기능이 활성화되고, 그렇지 않다면 신고 기능만 활성화되게 하는 switch문을 구현하였다. 이는 마우스 커서를 가져다 대면 나오는 PopOver를 통해 확인할 수 있다. 또한, 원래는 서버 통신을 통해 진행해야 하지만 일시적으로 State를 활용해 onClick 이벤트로 heart 버튼이 onClick시 HeartTwoTone이 되게, commentForm이 Open 되게 구현하였다. 여기서 기억해야 할 점은, Toggle, 즉 false를 true로, true를 false로 되게 하는 기능은 `setLiked((prev) => !prev);`를 통해 진행된다는 점이다.
 
 ![ezgif-2-001e57abcc80](https://user-images.githubusercontent.com/78855917/131004522-460891ce-2c2e-4b85-bbb3-9c038d7239f5.gif)
+<br><br>
+
+### 댓글 구현하기
+
+<br>
+우선 CommentForm이라는 댓글 입력 폼을 생성하여 props로 post 데이터를 넘겨 주어야 한다. 댓글을 작성할 때에 이 댓글은 post에 속하므로 그 특정 게시글에 대한 정보, 즉 게시글의 id가 필요하기 때문이다. post.Comment.length로 게시물의 댓글 수를 나오게 하고 li 태그에 댓글을 쓴 사용자의 정보와 내용이 나오게 한다.
+<br><Br>
+
+```js
+{commentFormOpened && (
+        <div>
+          <CommentForm post={post} />
+          <List
+            header={`${post.Comments.length}개의 댓글`}
+            itemLayout="horizontal"
+            dataSource={post.Comments}
+            renderItem={(item) => (
+              <li>
+                <Comment
+                  author={item.User.nickname}
+                  avatar={<Avatar>{item.User.nickname[0]}</Avatar>}
+                  content={item.content}
+                />
+              </li>
+            )}
+          />
+        </div>
+```
+
+<br>
+이제 CommentForm.js를 구현해 보자. 사전에 미리 구현해두었던 커스텀 Hooks를 사용하여 CommentText의 상태와 onChange 이벤트를 연결시켜준 후, 댓글을 입력했을 때의 id와 내용을 console 창에 표기되도록 구현하였다. 이렇게 프로그래밍을 하다 보면 오타에 의한 에러가 발생하는 경우가 잦은데, 이는 console 창에 표기되는 에러의 내용을 보면 해당 에러가 어느 줄에서 발생했는지 표시해 주기 때문에 그 부분을 참고하는 편이 좋다.
+<br><br>
+
+```js
+import { Form, Input, Button } from "antd";
+import React, { useCallback } from "react";
+import { useSelector } from "react-redux";
+import PropTypes from "prop-types";
+import useInput from "..//hooks/useInput";
+
+const CommentForm = ({ post }) => {
+  const id = useSelector((state) => state.user.me?.id);
+  const [commentText, onChangeCommentText] = useInput("");
+  const onSubmitComment = useCallback(() => {
+    console.log(post.id, commentText);
+  }, [commentText]);
+  return (
+    <Form onFinish={onSubmitComment}>
+      <Form.Item style={{ position: "relative", margin: 0 }}>
+        <Input.TextArea
+          value={commentText}
+          onChange={onChangeCommentText}
+          rows={4}
+        />
+        <Button
+          style={{ position: "absolute", right: 0, bottom: -40 }}
+          type="primary"
+          htmlType="submit"
+        >
+          삐약
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+};
+
+CommentForm.PropTypes = {
+  post: PropTypes.object.isRequired,
+};
+
+export default CommentForm;
+```
