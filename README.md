@@ -1615,3 +1615,90 @@ CommentForm.PropTypes = {
 
 export default CommentForm;
 ```
+
+<br>
+
+### 이미지 구현하기
+
+<br>
+postImage를 구현해 보자. 이미지가 각각 1개, 2개, 3개 이상일 때를 조건문을 활용하여 구현한다. 이때 showImagesZoom 이라는 State를 만들어서 이미지를 클릭시 true 값이 되게 하고, onClose라는 함수를 만들어 imagesZoom 컴포넌트에 props로 넘겨 주었다. showImagesZoom이 true 값이 되면 imagesZoom 컴포넌트가 실행되게 구현한 것이다.
+<br><br>
+
+```js
+import React, { useCallback, useState } from "react";
+import PropTypes from "prop-types";
+import { PlusOutlined } from "@ant-design/icons";
+
+const PostImages = ({ images }) => {
+  const [showImagesZoom, setShowImagesZoom] = useState(false);
+  const onZoom = useCallback(() => {
+    setShowImagesZoom(true);
+  }, []);
+  if (images.length === 1) {
+    return (
+      <>
+        <img
+          role="presentation"
+          src={images[0].src}
+          alt={images[0].src}
+          onClick={onZoom}
+        />
+      </>
+    );
+  }
+  if (images.length === 2) {
+    return (
+      <>
+        <img
+          role="presentation"
+          style={{ width: "50%", display: "inline-block" }}
+          src={images[0].src}
+          alt={images[0].src}
+          onClick={onZoom}
+        />
+        <img
+          role="presentation"
+          style={{ width: "50%", display: "inline-block" }}
+          src={images[1].src}
+          alt={images[1].src}
+          onClick={onZoom}
+        />
+      </>
+    );
+  }
+  return (
+    <>
+      <div>
+        <img
+          role="presentation"
+          style={{ width: "50%", display: "inline-block" }}
+          src={images[0].src}
+          alt={images[0].src}
+          onClick={onZoom}
+        />
+        <div
+          role="presentation"
+          style={{
+            display: "inline-block",
+            width: "50%",
+            textAlign: "center",
+            verticalAlign: "middle",
+          }}
+          onClick={onZoom}
+        >
+          <PlusOutlined />
+          <br />
+          {images.length - 1}
+          개의 사진 더보기
+        </div>
+      </div>
+    </>
+  );
+};
+
+PostImages.propTypes = {
+  images: PropTypes.arrayOf(PropTypes.object),
+};
+
+export default PostImages;
+```
