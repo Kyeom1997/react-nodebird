@@ -1776,4 +1776,48 @@ export default ImagesZoom;
 그 뒤에는 간단히 currentSlide라는 State를 만들어 상태를 관리해주고, styled-components로 각각의 스타일을 구성하였다. 이때, styled-components가 너무 많아 지저분해 보일 수 있으므로, styles.js라는 파일에 빼준 뒤 이를 import하여 가져와 주었다. react-slick의 옵션들은 공식 문서를 참조하자.
 <br><br>
 
-> [react-slick](https://react-slick.neostack.com/)
+> [React-slick](https://react-slick.neostack.com/)
+
+<br>
+
+### 게시글 해시태그 링크로 만들기
+
+<br>
+게시글의 해시태그를 링크로 넘어가게 하는 기능을 구현해 보자. 우선 PostCard.js의 Card.meta 부분의 description을 컴포넌트로 변경한다. 
+<br><br>
+
+```js
+description={<PostCardContent postData={post.content} />}
+```
+
+<br>
+
+이제 PostCardContent.js를 만들고 틀을 구성하는데, 여기서 해시태그를 구분하는 부분은 split을 사용해 정규 표현식으로 구분하게 된다. 정규 표현식은 [Regexr](https://regexr.com/) 페이지에서 테스트할 수 있다.
+<br><br>
+
+```js
+import React from "react";
+import Link from "next/link";
+import PropTypes from "prop-types";
+
+const PostCardContent = ({ postData }) => (
+  <div>
+    {postData.split(/(#[^\s#]+)/g).map((v, i) => {
+      if (v.match(/(#[^\s]+)/)) {
+        return (
+          <Link href={`/hashtag/${v.slice(1)}`} key={i}>
+            <a>{v}</a>
+          </Link>
+        );
+      }
+      return v;
+    })}
+  </div>
+);
+
+PostCardContent.propTypes = {
+  postData: PropTypes.string.isRequired,
+};
+
+export default PostCardContent;
+```
