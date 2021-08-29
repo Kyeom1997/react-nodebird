@@ -1702,3 +1702,78 @@ PostImages.propTypes = {
 
 export default PostImages;
 ```
+
+<br>
+
+### 이미지 캐루셀 구현하기(react-slick)
+
+<br>
+
+3개 이상의 이미지가 게시글에 있을 시, 이를 클릭하여 팝업 형식으로 띄운 뒤 슬라이드 형식으로 볼 수 있게 하는 기능을 구현해보자. 이는 react-slick이라는 것을 통해 구현할 수 있다. 우선 ImagesZoom이라는 디렉토리를 생성하고 그 안에 index.js를 생성하였다.
+<br><br>
+
+```js
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import Slick from "react-slick";
+import {
+  Overlay,
+  Global,
+  Header,
+  SlickWrapper,
+  ImgWrapper,
+  Indicator,
+  CloseBtn,
+} from "./styles";
+
+const ImagesZoom = ({ images, onClose }) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  return (
+    <Overlay>
+      <Global />
+      <div>
+        <Header>
+          <h1>상세 이미지</h1>
+          <CloseBtn onClick={onClose}>X</CloseBtn>
+        </Header>
+        <SlickWrapper>
+          <div>
+            <Slick
+              initialSlide={0}
+              beforeChange={(slide) => setCurrentSlide(slide)}
+              infinite
+              arrows={false}
+              slidesToShow={1}
+              slidesToScroll={1}
+            >
+              {images.map((v) => (
+                <ImgWrapper key={v.src}>
+                  <img src={v.src} alt={v.src} />
+                </ImgWrapper>
+              ))}
+            </Slick>
+            <Indicator>
+              <div>
+                {currentSlide + 1} / {images.length}
+              </div>
+            </Indicator>
+          </div>
+        </SlickWrapper>
+      </div>
+    </Overlay>
+  );
+};
+
+ImagesZoom.propTypes = {
+  images: PropTypes.arrayOf(PropTypes.object).isRequired,
+  onClose: PropTypes.func.isRequired,
+};
+
+export default ImagesZoom;
+```
+
+<br>
+그 뒤에는 간단히 currentSlide라는 State를 만들어 상태를 관리해주고, styled-components로 각각의 스타일을 구성하였다. 이때, styled-components가 너무 많아 지저분해 보일 수 있으므로, styles.js라는 파일에 빼준 뒤 이를 import하여 가져와 주었다. react-slick의 옵션들은 공식 문서를 참조하자.
+<br><br>
+
+> [react-slick](https://react-slick.neostack.com/)
