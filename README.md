@@ -1821,3 +1821,49 @@ PostCardContent.propTypes = {
 
 export default PostCardContent;
 ```
+
+<br>
+
+---
+
+<br>
+
+# Chapter 3.
+
+<br>
+
+## Redux-Saga 연동하기
+
+<br>
+
+### redux-thunk 이해하기
+
+<br>
+
+### redux-middleware
+
+<br>
+리덕스에 없던 기능들을 추가해주는 역할이다. 기존의 컴포넌트에 생기는 사이드 이펙트 (데이터 요청(fetch)등의 비동기 작업, 브라우저 캐시 같은 순수하지 않은 것들)들을 최소화 시킨다. 
+<br><br>
+
+### redux-thunk
+
+<br>
+리덕스가 비동기 액션을 dispatch 할 수 있도록 도와주는 역할이다. 하나의 action에서 dispatch를 여러 번 할 수있게 해주는 역할인데, 이 정도가 redux-thunk의 기능의 끝이다.
+<br><br>
+
+```js
+export const loginAction = (data) => {
+  return (dispatch, getState) => {
+    const state = getState();
+    axios
+      .post("./api/login")
+      .then((res) => {
+        dispatch(loginSuccessAction(res.json));
+      })
+      .catch((err) => {
+        dispatch(loginFailureAction(err));
+      });
+  };
+};
+```
