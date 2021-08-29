@@ -20,7 +20,7 @@ const PostImages = ({ images }) => {
           alt={images[0].src}
           onClick={onZoom}
         />
-        {showImagesZoom && <ImagesZoom images={images} onZoom={onClose} />}
+        {showImagesZoom && <ImagesZoom images={images} onClose={onClose} />}
       </>
     );
   }
@@ -41,7 +41,7 @@ const PostImages = ({ images }) => {
           alt={images[1].src}
           onClick={onZoom}
         />
-        {showImagesZoom && <ImagesZoom images={images} onZoom={onClose} />}
+        {showImagesZoom && <ImagesZoom images={images} onClose={onClose} />}
       </>
     );
   }
@@ -71,7 +71,7 @@ const PostImages = ({ images }) => {
           개의 사진 더보기
         </div>
       </div>
-      {showImagesZoom && <ImagesZoom images={images} onZoom={onClose} />}
+      {showImagesZoom && <ImagesZoom images={images} onClose={onClose} />}
     </>
   );
 };
