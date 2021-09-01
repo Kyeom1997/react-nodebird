@@ -1867,3 +1867,52 @@ export const loginAction = (data) => {
   };
 };
 ```
+
+<br><br>
+
+### saga 설치하고 generator 이해하기
+
+<br>
+
+리덕스 사가란, 리액트의 사이드 이펙트만 담당하는 미들웨어 중 하나로, App에서 action을 받아 처리하고, 멈추고, 취소할 수 있게 만들어 주며 리덕스 상태에 접근하여 Action을 dispatch 할 수 있게 해준다. 또한 비동기 흐름을 쉽게 읽고, 쓰며, 테스트할 수 있는 ES6 문법인 generator를 사용할 수 있다.
+<br><br>
+
+```
+npm i redux-saga
+npm i next-redux-saga
+```
+
+<br>
+넥스트에서 리덕스 사가를 사용하려면 별도로 next-redux-saga 역시 설치해 주어야 한다. 이제 configureStore.js와 sagas 폴더를 생성한 후 이 안에 index.js 역시 만들어 주자. 여기서 sagas 폴더를 생성해주는 이유는 rootSaga를 이용하기 때문이다.
+<br><br>
+
+```js
+//configureStore.js
+import createSagaMiddleware from "redux-saga";
+
+import reducer from "../reducers";
+import rootSaga from "../sagas";
+
+const configureStore = () => {
+  const sagaMiddleware = createSagaMiddleware();
+  const middlewares = [sagaMiddleware];
+  const enhancer =
+    process.env.NODE_ENV === "production"
+      ? compose(applyMiddleware(...middlewares))
+      : composeWithDevTools(applyMiddleware(...middlewares));
+  const store = createStore(reducer, enhancer);
+  store.sagaTask = sagaMiddleware.run(rootSaga);
+  return store;
+};
+```
+
+<br>
+
+```js
+//sagas/index.js
+export default function* rootSaga() {}
+```
+
+<Br>
+
+configureStore.js에서 createSagaMiddleware로 선언을 해준 뒤 `const middlewares = [sagaMiddleware];`로 연결해 준다. 사가는 `function*()` 제네레이터를 사용하는데, 제네레이터는 gen()으로 실행하는 것이 아니라, gen().next()를 해야 실행된다. 제네레이터 함수는 yield를 이용하여 멈출 수 있고, 이벤트 리스너처럼 사용이 가능하다. 이와 같이 yield를 이용한 이 성질을 이용한 것이 바로 redux-saga라고 할 수 있다.
