@@ -1868,7 +1868,7 @@ export const loginAction = (data) => {
 };
 ```
 
-<br><br>
+<br>
 
 ### saga 설치하고 generator 이해하기
 
@@ -1916,3 +1916,98 @@ export default function* rootSaga() {}
 <Br>
 
 configureStore.js에서 createSagaMiddleware로 선언을 해준 뒤 `const middlewares = [sagaMiddleware];`로 연결해 준다. 사가는 `function*()` 제네레이터를 사용하는데, 제네레이터는 gen()으로 실행하는 것이 아니라, gen().next()를 해야 실행된다. 제네레이터 함수는 yield를 이용하여 멈출 수 있고, 이벤트 리스너처럼 사용이 가능하다. 이와 같이 yield를 이용한 이 성질을 이용한 것이 바로 redux-saga라고 할 수 있다.
+<br><br>
+
+### saga 이펙트 알아보기
+
+<br>
+이제 saga 이펙트를 알아보자. 이전에 만들었던 sagas/index.js를 다음과 같이 수정하자.
+<br><br>
+
+```js
+import { all, fork } from "redux-saga/effects";
+
+function* watchLogIn() {
+  yield take("LOG_IN");
+}
+
+function* watchLogOut() {
+  yield take("LOG_OUT");
+}
+
+function* watchAddPost() {
+  yield take("ADD_POST");
+}
+
+export default function* rootSaga() {
+  yield all([fork(watchLogIn), fork(watchLogOut), fork(watchAddPost)]);
+}
+```
+
+<br>
+
+위 그림의 all, fork와 같은 것들을 바로 리덕스 사가 이펙트라고 부른다. 여기서 `all`은 배열을 받아서 그 안에 있는 것을 한번에 실행하는 역할을 한다. 이렇게 실행을 하면 `fork`는 위에 명시된 함수를 실행하게 된다. 이 `fork`가 `watchLogIn` 함수를 실행하면 `watchLogIn`함수는 `yield take('LOG_IN')`, 즉 `LOG_IN`이라는 함수가 실행될 때까지 대기하게 된다. 그럼 logIn 함수를 구현해 보자.
+<br><br>
+
+```js
+import { all, call, fork, put, take } from "redux-saga/effects";
+import axios from "axios";
+
+function loginAPI() {
+  return axios.post("/api/login");
+}
+
+function* login() {
+  try {
+    const result = yield call(loginAPI);
+    yield put({
+      type: "LOG_IN_SUCCESS",
+      data: result.data,
+    });
+  } catch (err) {
+    yield put({
+      type: "LOG_IN_FAILURE",
+      data: err.response.data,
+    });
+  }
+}
+
+function* watchLogIn() {
+  yield take("LOG_IN_REQUEST", logIn);
+}
+
+function* watchLogOut() {
+  yield take("LOG_OUT_REQUEST");
+}
+
+function* watchAddPost() {
+  yield take("ADD_POST_REQUEST");
+}
+
+export default function* rootSaga() {
+  yield all([
+    fork(watchLogIn), //call
+    fork(watchLogOut),
+    fork(watchAddPost),
+  ]);
+}
+```
+
+<br>
+LOG_IN 함수가 실행되면 logIn 제네레이터가 실행되고, 이 제네레이터 함수는 loginAPI라는 함수를 받아와 axios에서 서버로 로그인 요청을 보내게 된다. 여기서 주의해야 할 점은, loginAPI는 제네레이터 함수가 아니기 때문에 *을 붙이면 안된다. 그 결과값을 받아와 result.data를 받아오게 되는데, 요청이 실패할 때를 대비해 try, catch 문으로 error 값도 받아올 수 있게 한다. 
+<br><br>
+
+이렇게 redux-saga가 redux-thunk와 다른 점은, thunk에서는 비동기 액션 크리에이터를 직접 실행했지만 saga에서는 event-listner와 같은 역할을 한다는 점이다. 여기서 `put`은 액션 객체를 실행하는 `dispatch`와 같은 역할을 한다.
+<br><br>
+
+여기서 `LOG_IN` 액션을 `LOG_IN_REQUEST`로 변경한 이유는, 어차피 로그인을 하나 로그인 요청을 한 순간에 이벤트 리스너를 실행하나 마찬가지이기 때문에 액션을 늘리지 않기 위한 이유이다. 리덕스는 액션이 많다는 단점이 있기 때문에, 액션을 줄이는 편이 좋다.
+<br><br>
+
+`call`과 `fork`의 차이는, `call`은 동기 함수 호출이고, `fork`는 비동기 함수 호출이라는 점이다. 즉, logIn 함수에서 `call`을 하면 loginAPI가 return 할 때까지 기다리지만, `fork`를 하면 비동기 함수 호출이기 때문에 요청을 보낸 후 대기를 하지 않고 바로 다음 것을 실행한다 (none-blocking).
+<br><br>
+
+> <br> fork => return axios.post('api/login') <br><br>
+> call => axios.post('api/lgoin').then()
+> <br><br>
+
+<br>
