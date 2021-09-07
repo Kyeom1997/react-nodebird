@@ -2011,3 +2011,57 @@ LOG_IN 함수가 실행되면 logIn 제네레이터가 실행되고, 이 제네�
 > <br><br>
 
 <br>
+
+### take, take 시리즈, throttle 알아보기
+
+<br>
+
+`yield take` 문의 치명적인 단점은, 바로 일회용이라는 것이다. 그렇기 때문에 단순히 yield take만 사용하면 로그인이나 로그아웃, 게시글을 한 번 밖에 할 수 없는 일이 발생한다. 이것은 `while(true)` 로 해당 구문을 감싸면 해결이 되지만, 이는 직관적이지 않고, 동기적으로 사용된다는 단점이 있다. 그렇기 때문에 여기서 사용되는 것이 바로 `takeEvery`이다.
+<br><br>
+
+```js
+function* watchLogIn() {
+  yield takeEvery("LOG_IN_REQUEST", logIn);
+}
+
+function* watchLogOut() {
+  yield takeEvery("LOG_OUT_REQUEST", logOut);
+}
+
+function* watchAddPost() {
+  yield takeEvery("ADD_POST_REQUEST", addPost);
+}
+```
+
+<br>
+
+`takeLatest`라는 것도 있다. 이는 마지막 클릭만을 실행하는 문법이다. 사용자가 실수로 두 번 클릭하거나, 마우스의 고장 문제등으로 여러 번 클릭되는 경우가 있기 때문에 100번을 클릭해도 99번의 클릭은 무시되고, 마지막 클릭만 실행되는 것이다. 첫번째 클릭만 실행하고 싶으면 `takeLeading`을 사용하면 된다. 다만 takeLatest라고 해서 이미 완료된 것을 취소하는 것이 아니라, 동시에 진행될시에 로딩중인 완료되지 않은 것을 취소하는 것이다. 또한 `takeLatest`는 백엔드 서버에서 오는 응답을 취소하는 것이지, 프론트 서버에서 보내는 요청을 취소하는 개념이 아니기 때문에 백엔드 서버에 데이터가 2번 저장될 수 있다는 단점이 있다. 그렇기 때문에, 백엔드 서버를 설정할 시에 데이터가 2번 저장되지 않도록 검사를 해주어야 한다.
+<br><br>
+
+saga effect에는 `throttle` 이라는 것도 있다. 이는, `function* watchAddPost() { yield throttle('ADD_POST_REQUEST', addPost, 2000) };` 와 같이 작성하였을때, 2초 동안 'ADD_POST_REQUEST'가 한번만 실행될 수 있게 한다. 여기서 debounce와 throttle의 차이는 <b>throttle은 마지막 호출된 함수를 실행한 후에 일정 시간이 지나기 전에 다시 호출되지 않게 하는 것이고, debounce는 연이어 호출되는 함수 중에 마지막 함수만 호출되게 하는 것이다. </b>
+<br><br>
+
+현재는 서버가 구축되어 있지 않기 때문에, API를 받아오면 무조건 오류가 발생할 것이다. 그렇기 때문에 `delay`라는 setTimeout 효과를 가지고 있는 effect로 더미 데이터를 받아오도록 하자.
+<br><br>
+
+```js
+function loginAPI(data) {
+  return axios.post("/api/login", data);
+}
+
+function* logIn(action) {
+  try {
+    //const result = yield call(loginAPI, action.data);
+    yield delay(1000);
+    yield put({
+      type: "LOG_IN_SUCCESS",
+      data: result.data,
+    });
+  } catch (err) {
+    yield put({
+      type: "LOG_IN_FAILURE",
+      data: err.response.data,
+    });
+  }
+}
+```
