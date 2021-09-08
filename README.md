@@ -2065,3 +2065,189 @@ function* logIn(action) {
   }
 }
 ```
+
+<br>
+
+### saga 쪼개고 reducer와 연결하기
+
+<br>
+
+saga 역시 reducer와 마찬가지로 하나의 파일에 작성하면 엄청나게 길어지기 때문에, 기능에 따라서 분리해 줄 필요가 있다. sagas 폴더에 post.js와 user.js 파일을 생성해 주자. post.js에는 post와 관련된 기능을, user.js에는 로그인, 로그아웃, 회원가입과 같은 user와 관련된 기능을 작성해 준다.
+<br><br>
+
+```js
+// sagas/post.js
+
+import { delay, put, takeLatest, all, fork } from "@redux-saga/core/effects";
+import {
+  ADD_POST_REQUEST,
+  ADD_POST_SUCCESS,
+  ADD_POST_FAILURE,
+  ADD_COMMENT_REQUEST,
+  ADD_COMMENT_SUCCESS,
+  ADD_COMMENT_FAILURE,
+} from "../reducers/post";
+
+function addPostAPI(data) {
+  return axios.post("/api/post", data);
+}
+
+function* addPost(action) {
+  try {
+    //const result = yield call(addPostAPI, action);
+    yield delay(1000);
+    yield put({
+      type: ADD_POST_SUCCESS,
+      data: result.data,
+    });
+  } catch (err) {
+    yield put({
+      type: ADD_POST_FAILURE,
+      data: err.response.data,
+    });
+  }
+}
+
+function addCommentAPI(data) {
+  return axios.post(`/api/post/${data.postId}/comment`, data);
+}
+
+function* addComment(action) {
+  try {
+    //const result = yield call(addCommentAPI, action);
+    yield delay(1000);
+    yield put({
+      type: ADD_COMMENT_SUCCESS,
+      data: result.data,
+    });
+  } catch (err) {
+    yield put({
+      type: ADD_COMMENT_FAILURE,
+      data: err.response.data,
+    });
+  }
+}
+
+function* watchAddPost() {
+  yield takeLatest(ADD_POST_REQUEST, addPost);
+}
+
+function* watchAddComment() {
+  yield takeLatest(ADD_COMMENT_REQUEST, addComment);
+}
+
+export default function* postSaga() {
+  yield all([fork(watchAddPost), fork(watchAddComment)]);
+}
+```
+
+<br>
+
+```js
+//sagas/user.js
+import { delay, put, takeLatest, all, fork } from "@redux-saga/core/effects";
+import axios from "axios";
+import {
+  LOG_IN_REQUEST,
+  LOG_IN_SUCCESS,
+  LOG_IN_FAILURE,
+  LOG_OUT_REQUEST,
+  LOG_OUT_SUCCESS,
+  LOG_OUT_FAILURE,
+  SIGN_UP_FAILURE,
+  SIGN_UP_SUCCESS,
+  SIGN_UP_REQUEST,
+} from "../reducers/user";
+
+function loginAPI(data) {
+  return axios.post("/api/login", data);
+}
+
+function* logIn(action) {
+  try {
+    //const result = yield call(loginAPI, action.data);
+    yield delay(1000);
+    yield put({
+      type: LOG_IN_SUCCESS,
+      data: action.data,
+    });
+  } catch (err) {
+    yield put({
+      type: LOG_IN_FAILURE,
+      error: err.response.data,
+    });
+  }
+}
+
+function logoutAPI() {
+  return axios.post("/api/logout");
+}
+
+function* logOut() {
+  try {
+    //const result = yield call(signUpAPI);
+    yield delay(1000);
+    yield put({
+      type: SIGN_UP_SUCCESS,
+    });
+  } catch (err) {
+    yield put({
+      type: SIGN_UP_FAILURE,
+      error: err.response.data,
+    });
+  }
+}
+
+function signUpAPI() {
+  return axios.post("/api/signup");
+}
+
+function* signUp() {
+  try {
+    //const result = yield call(logoutAPI);
+    yield delay(1000);
+    yield put({
+      type: LOG_OUT_SUCCESS,
+    });
+  } catch (err) {
+    yield put({
+      type: LOG_OUT_FAILURE,
+      error: err.response.data,
+    });
+  }
+}
+
+function* watchLogIn() {
+  yield takeLatest(LOG_IN_REQUEST, logIn);
+}
+
+function* watchLogOut() {
+  yield takeLatest(LOG_OUT_REQUEST, logOut);
+}
+
+function* watchSignUp() {
+  yield takeLatest(SIGN_UP_REQUEST, signUP);
+}
+
+export default function* userSaga() {
+  yield all([fork(watchLogIn), fork(watchLogOut), fork(watchSignUp)]);
+}
+```
+
+<br>
+이렇게 쪼갠 saga들은 다시 index.js에 연결해 준다.
+<br><br>
+
+```js
+import { all, fork } from "redux-saga/effects";
+
+import postSaga from "./post";
+import userSaga from "./user";
+
+export default function* rootSaga() {
+  yield all([fork(postSaga), fork(userSaga)]);
+}
+```
+
+<br>
+이제 다시 reducer와 연결해 주어야 하는데, useSelector를 통해 각 컴포넌트 별 관련된 상태를 조회해서 가져오게 된다.
