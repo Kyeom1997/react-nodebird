@@ -1,4 +1,10 @@
 export const initialState = {
+  followLoading: false, // 팔로우 시도중
+  followDone: false,
+  followError: null,
+  unfollowLoading: false, // 언팔로우 시도중
+  unfollowDone: false,
+  unfollowError: null,
   logInLoading: false, // 로그인 시도중
   logInDone: false,
   logInError: null,
@@ -44,9 +50,17 @@ const dummyUser = (data) => ({
   ...data,
   nickname: "행갬",
   id: 1,
-  Posts: [],
-  Followings: [],
-  Followers: [],
+  Posts: [{ id: 1 }],
+  Followings: [
+    { nickname: "김형겸" },
+    { nickname: "김은정" },
+    { nickname: "이준희" },
+  ],
+  Followers: [
+    { nickname: "김형겸" },
+    { nickname: "김은정" },
+    { nickname: "이준희" },
+  ],
 });
 
 export const loginRequestAction = (data) => {
