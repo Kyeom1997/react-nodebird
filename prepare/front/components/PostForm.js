@@ -22,12 +22,10 @@ const PostForm = () => {
     }
   }, [addPostDone]);
 
-  const onSubmitForm = useCallback(() => {
+  const onSubmitForm = useCallback((text) => {
     dispatch({
       type: ADD_POST_REQUEST,
-      data: {
-        text,
-      },
+      data: text,
     });
   }, []);
 
