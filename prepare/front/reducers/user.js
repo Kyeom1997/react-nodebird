@@ -53,18 +53,18 @@ export const REMOVE_POST_OF_ME = "REMOVE_POST_OF_ME";
 
 const dummyUser = (data) => ({
   ...data,
-  nickname: "제로초",
+  nickname: "Kyeom",
   id: 1,
   Posts: [{ id: 1 }],
   Followings: [
-    { nickname: "부기초" },
-    { nickname: "Chanho Lee" },
-    { nickname: "neue zeal" },
+    { nickname: "행갬" },
+    { nickname: "김은정" },
+    { nickname: "이준희" },
   ],
   Followers: [
-    { nickname: "부기초" },
-    { nickname: "Chanho Lee" },
-    { nickname: "neue zeal" },
+    { nickname: "행갬" },
+    { nickname: "김은정" },
+    { nickname: "이준희" },
   ],
 });
 

@@ -86,7 +86,7 @@ const dummyPost = (data) => ({
 
 const dummyComment = (data) => ({
   id: shortId.generate(),
-  content: data,
+  content: data.content,
   User: {
     id: 1,
     nickname: "행갬",
