@@ -2406,3 +2406,61 @@ case ADD_POST_TO_ME:
 ```
 
 <br>
+
+### 게시글 삭제 saga 작성하기
+
+<br>
+
+게시글을 지울 때는 filter를 이용하여 지워 주는데, 이때 `filter((v) => v.id !== action.data)` 에서 `!==`를 쓰지 않고 `===`를 쓰게 되면 내가 지우려고 한 부분을 제외한 나머지를 삭제하니 주의해야 한다.
+<br><br>
+
+```js
+//sagas/post.js
+function* removePost(action) {
+  try {
+    // const result = yield call(removePostAPI, action.data);
+    yield delay(1000);
+    yield put({
+      type: REMOVE_POST_SUCCESS,
+      data: action.data,
+    });
+    yield put({
+      type: REMOVE_POST_OF_ME,
+      data: action.data,
+    });
+  } catch (err) {
+    console.error(err);
+    yield put({
+      type: REMOVE_POST_FAILURE,
+      data: err.response.data,
+    });
+  }
+}
+```
+
+<br>
+
+```js
+//reducers/post.js
+case REMOVE_POST_SUCCESS:
+  return {
+    ...state,
+    mainPosts: state.mainPosts.filter((v) => v.id !== action.data),
+    removePostLoading: false,
+    removePostDone: true,
+  };
+```
+
+<br>
+
+```js
+//reducers/user.js
+case REMOVE_POST_OF_ME:
+  return {
+    ...state,
+    me: {
+      ...state.me,
+      Posts: state.me.Posts.filter((v) => v.id !== action.data),
+    }
+  };
+```
