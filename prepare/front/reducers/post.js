@@ -78,7 +78,7 @@ const dummyPost = (data) => ({
   content: data.content,
   User: {
     id: 1,
-    nickname: "행갬",
+    nickname: "Kyeom",
   },
   Images: [],
   Comments: [],
@@ -86,10 +86,10 @@ const dummyPost = (data) => ({
 
 const dummyComment = (data) => ({
   id: shortId.generate(),
-  content: data.content,
+  content: data,
   User: {
     id: 1,
-    nickname: "행갬",
+    nickname: "Kyeom",
   },
 });
 // 이전 상태를 액션을 통해 다음 상태로 만들어내는 함수(불변성은 지키면서)

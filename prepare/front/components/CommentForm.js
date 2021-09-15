@@ -36,7 +36,7 @@ const CommentForm = ({ post }) => {
           onChange={onChangeCommentText}
         />
         <Button
-          style={{ position: "absolute", right: 0, bottom: -40 }}
+          style={{ position: "absolute", right: 0, bottom: -40, zIndex: 1 }}
           type="primary"
           htmlType="submit"
           loading={addCommentLoading}
