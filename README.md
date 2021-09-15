@@ -2342,3 +2342,67 @@ id: shortId.generate(),
 
 (...)
 ```
+
+<br>
+
+리덕스는 액션을 통해서만 값을 변경해 줄 수 있기 때문에, user.js에 액션을 만들어 주고 saga의 post.js에서 ADD_POST_TO_ME를 실행하게 한 후, user 리듀서에서 id 데이터를 이어받아 게시글이 작성되면 me.Posts.length로 게시글이 추가되는 코드를 작성할 수 있다. 이는 게시글이 작성되면 작성 게시글 수가 올라가는 기능이다.
+<br><br>
+
+```js
+//reducers/user.js
+export const ADD_POST_TO_ME = "ADD_POST_TO_ME";
+export const REMOVE_POST_OF_ME = "REMOVE_POST_OF_ME";
+```
+
+<br>
+
+```js
+//sagas/post.js
+function* addPost(action) {
+  try {
+    yield delay(1000);
+    yield put({
+      type: ADD_POST_SUCCESS,
+      data: {
+        id,
+        content: action.data,
+      },
+    });
+    yield put({
+      type: ADD_POST_TO_ME,
+      data: id,
+    });
+  } catch (err) {
+    yield put({
+      type: ADD_POST_FAILURE,
+      error: err.response.data,
+    });
+  }
+}
+```
+
+<br>
+
+```js
+//reducers/user.js/ADD_POST_TO_ME
+case ADD_POST_TO_ME:
+  return {
+    ...state,
+    me: {
+      ...state.me,
+      Posts: [{ id: action.data }, ...state.me.Posts],
+    },
+  };
+```
+
+<br>
+
+```js
+//components/UserProfile.js
+<Card
+  actions={[
+    <div key="twit">짹짹<br />{me.Posts.length}</div>,
+  ]}>
+```
+
+<br>
