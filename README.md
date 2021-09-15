@@ -2250,4 +2250,95 @@ export default function* rootSaga() {
 ```
 
 <br>
-이제 다시 reducer와 연결해 주어야 하는데, useSelector를 통해 각 컴포넌트 별 관련된 상태를 조회해서 가져오게 된다.
+이제 다시 reducer와 연결해 주어야 하는데, useSelector를 통해 각 컴포넌트 별 관련된 상태를 조회해서 가져오게 된다. 여기서 reducer의 액션명들을 문자열들로 했을 시에는, 오타에 취약하다는 단점이 있기 때문에 별도의 변수로 빼서 하는 편이 좋다. 
+<br><br>
+
+```js
+export const LOG_IN_REQUEST = "LOG_IN_REQUEST";
+export const LOG_IN_SUCCESS = "LOG_IN_SUCCESS";
+export const LOG_IN_FAILURE = "LOG_IN_FAILURE";
+
+export const LOG_OUT_REQUEST = "LOG_OUT_REQUEST";
+export const LOG_OUT_SUCCESS = "LOG_OUT_SUCCESS";
+export const LOG_OUT_FAILURE = "LOG_OUT_FAILURE";
+
+export const SIGN_UP_REQUEST = "SIGN_UP_REQUEST";
+export const SIGN_UP_SUCCESS = "SIGN_UP_SUCCESS";
+export const SIGN_UP_FAILURE = "SIGN_UP_FAILURE";
+
+export const FOLLOW_REQUEST = "FOLLOW_REQUEST";
+export const FOLLOW_SUCCESS = "FOLLOW_SUCCESS";
+export const FOLLOW_FAILURE = "FOLLOW_FAILURE";
+
+export const UNFOLLOW_REQUEST = "UNFOLLOW_REQUEST";
+export const UNFOLLOW_SUCCESS = "UNFOLLOW_SUCCESS";
+export const UNFOLLOW_FAILURE = "UNFOLLOW_FAILURE";
+```
+
+<br>
+
+### 게시글, 댓글 saga 작성하기
+
+<br>
+
+우선, 게시글을 작성할 때의 데이터 흐름이 어떻게 진행되는지 알아두어야 한다. PostForm.js에서 `dispatch(addPost(text))`를 하게 되면, reducer의 post.js에서 addPost로 데이터를 받고, saga의 post.js에서 ADD_POST_SUCCESS로 이 데이터를 처리하게 된다. 그러면 reducer의 post.js에서 ADD_POST_SUCCESS가 실행되고, mainPosts 부분이 변경되면서 글이 작성되는 방식이다.
+<br><br>
+
+```js
+//PostForm.js
+const onSubmit = useCallback(() => {
+  dispatch(addPost(text));
+}, [text]);
+```
+
+<br>
+
+```js
+//sagas/post.js
+function* addPost(action) {
+  try {
+    yield delay(1000);
+    const id = shortId.generate();
+    yield put({
+      type: ADD_POST_SUCCESS,
+      data: {
+        id,
+        content: action.data,
+      },
+    });
+  };
+};
+```
+
+<br>
+
+```js
+//reducers/post.js
+case ADD_POST_SUCCESS:
+  return {
+    ...state,
+    mainPosts: [dummyPost(action.data), ...state.mainPosts],
+    addPostLoading: false,
+    addPostDone: true,
+  };
+```
+
+<br>
+게시글의 id값, 즉 dummyPost의 id를 2로 고정시켜 둘 경우, 모든 게시글의 id가 2로 나오기 때문에 key값이 겹쳐서 반복문이 인식을 못하게 된다. 이럴 때 사용하는 것이 바로 shortId이다. shortId를 사용하면 랜덤하게 Id값을 만들어 주기 때문에 유용하다.
+<br><br>
+
+```
+npm i shortid
+```
+
+<br>
+
+```js
+import shortId from 'shortid';
+
+(...)
+
+id: shortId.generate(),
+
+(...)
+```
