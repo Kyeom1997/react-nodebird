@@ -2464,3 +2464,74 @@ case REMOVE_POST_OF_ME:
     }
   };
 ```
+
+<br>
+
+### immer 도입하기
+
+<br>
+
+```js
+const postIndex = state.mainPosts.findIndex((v) => v.id === action.data.postId);
+const post = { ...state.mainPosts[postIndex] };
+post.Comments = [dummyComment(action.data.content), ...post.Comments];
+const mainPosts = [...state.mainPosts];
+return {
+  ...state,
+  mainPosts,
+  addCommentLoading: false,
+  addCommentDone: true,
+};
+```
+
+리액트의 불변성을 지키려면, 코드가 길게 작성되고 오류가 발생하기 쉽기 때문에 초보자가 하기에는 무리가 있다. 따라서, 이러한 문제를 해결하기 위해 immer라는 라이브러리를 사용한다.
+<br><br>
+
+```
+npm i immer
+```
+
+<br>
+
+```js
+import produce from "immer";
+```
+
+<br>
+
+immer의 기본 모양은 `return produce(state,(draft) => {});`가 기본이고, 이를 이용하여 코드를 작성하면 된다. `draft.` 뒤에 코드를 작성해 주면 되고, immer를 사용하면 코드의 길이가 줄게 되고 가독성, 생산성이 높아져 보다 깔끔한 코드를 작성할 수 있다.
+<br><br>
+
+```js
+const reducer = (state = initialState, action) =>
+  produce(state, (draft) => {
+    switch (action.type) {
+      case LOAD_POSTS_REQUEST:
+        draft.loadPostsLoading = true;
+        draft.loadPostsDone = false;
+        draft.loadPostsError = null;
+        break;
+```
+
+<br>
+
+```js
+case ADD_COMMENT_SUCCESS: {
+        const post = draft.mainPosts.find((v) => v.id === action.data.postId);
+        post.Comments.unshift(dummyComment(action.data.content));
+        draft.addCommentLoading = false;
+        draft.addCommentDone = true;
+        break;
+        // const postIndex = state.mainPosts.findIndex((v) => v.id === action.data.postId);
+        // const post = { ...state.mainPosts[postIndex] };
+        // post.Comments = [dummyComment(action.data.content), ...post.Comments];
+        // const mainPosts = [...state.mainPosts];
+        // mainPosts[postIndex] = post;
+        // return {
+        //   ...state,
+        //   mainPosts,
+        //   addCommentLoading: false,
+        //   addCommentDone: true,
+        // };
+      }
+```
