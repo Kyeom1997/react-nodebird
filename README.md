@@ -2535,3 +2535,103 @@ case ADD_COMMENT_SUCCESS: {
         // };
       }
 ```
+
+<br>
+
+### faker로 실감나는 더미 데이터 만들기
+
+<br>
+
+```
+npm i faker
+```
+
+<br>
+
+```js
+import faker from "faker";
+```
+
+<br>
+
+```js
+      nickname: faker.name.findName(),
+    },
+    content: faker.lorem.paragraph(),
+    Images: [{
+      src: faker.image.image(),
+    }],
+```
+
+<br>
+
+더미 데이터는 페이커라는 패키지를 통해 랜덤하게 설정해 줄 수 있다. npm으로 페이커를 설치해 주고, faker가 가지고 있는 함수를 통해 닉네임, 글, 이미지의 더미 데이터들을 가상으로 만들어줄 수 있다. 자세한 내용은 공식 문서를 확인해보자.
+<br><br>
+
+> [Faker](https://www.npmjs.com/package/faker)
+
+<br>
+이제 페이커를 통해 generateDummyPost라는 더미데이터를 만들어 주고, 글을 initialState의 mainPost에 concat으로 글을 추가해준다. 이 코드는 generateDummyPost 함수를 이용해서 서버에서 데이터를 불러오는 것을 임시로 만들어주는 역할을 해준다.
+<br><br>
+
+```js
+export const generateDummyPost = (number) =>
+  Array(number)
+    .fill()
+    .map(() => ({
+      id: shortId.generate(),
+      User: {
+        id: shortId.generate(),
+        nickname: faker.name.findName(),
+      },
+      content: faker.lorem.paragraph(),
+      Images: [
+        {
+          src: faker.image.image(),
+        },
+      ],
+      Comments: [
+        {
+          id: shortId.generate(),
+          User: {
+            id: shortId.generate(),
+            nickname: faker.name.findName(),
+          },
+          content: faker.lorem.sentence(),
+        },
+      ],
+    }));
+
+initialState.mainPosts = initialState.mainPosts.concat(generateDummyPost());
+```
+
+<br>
+
+또한, 자바스크립트의 concat을 사용할 때에는 `draft.mainPosts =`처럼 꼭 대입을 해주어야 한다.
+<br><br>
+
+```js
+case LOAD_POSTS_SUCCESS:
+  draft.loadPostsLoading = false;
+  draft.loadPostsDone = true;
+  draft.mainPosts = action.data.concat(draft.mainPosts);
+  draft.hasMorePosts = draft.mainPosts.length < 50;
+  break;
+```
+
+<br>
+이제 더미 데이터를 직접 써서 보여 주는 것이 아니라 페이지가 열리면 서버에서 받아오는 것처럼 useEffect를 이용해서 적용해 준다. sagas, reducers에 LOAD_POSTS_REQUEST를 하는 코드들을 작성해 주고, 데이터의 흐름을 생각하며 코드를 작성한다.
+<br><br>
+
+```js
+const Home = () => {
+  const dispatch = useDispatch();
+  const { me } = useSelector((state) => state.user);
+  const { mainPosts, hasMorePosts, loadPostsLoading } = useSelector((state) => state.post);
+
+  useEffect(() => {
+    dispatch({
+      type: LOAD_POSTS_REQUEST,
+    });
+  }, []);
+```
