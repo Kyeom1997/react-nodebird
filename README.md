@@ -2635,3 +2635,100 @@ const Home = () => {
     });
   }, []);
 ```
+
+<br>
+
+### 인피니트 스크롤링 적용하기
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/134481866-685972a0-eaa0-490d-9f2a-c4dd61c4fd34.png)
+<br>
+
+인피니트 스크롤이란, 위의 사진과 같이 무한하게 데이터의 끝까지 스크롤이 가능하게 하여 사용자의 편의를 높이는 기능이다. 인피니트 스크롤링을 사가와 리듀서를 가지고 구현을 해보도록 하자.
+<br><br>
+
+```js
+export const initialState = {
+  mainPosts: [],
+  imagePaths: [],
+  hasMorePosts: true,
+  loadPostsLoading: false,
+  loadPostsDone: false,
+  loadPostsError: null,
+};
+```
+
+<br>
+
+```js
+draft.hasMorePosts = draft.mainPosts.length < 50;
+```
+
+<br>
+
+`initialState`에 `hasMorePosts`라는 데이터를 만들어 주고, true 값을 초기 설정값을 준다. 초기값이 true가 되는 이유는 게시글의 갯수가 0인 경우, 데이터를 가져오려는 시도를 해야하기 때문이다. `draft.mainPosts < 50;` 은 50개 보다 게시글이 적으면 데이터를 가져오겠다는 의미이다.
+<br><br>
+이제 스크롤을 내리면 다음 게시글을 가져오는 코드를 작성해야 한다. 일단 addEventListener를 통해 스크롤 인자를 받고, return으로 removeEventListener를 통해 스크롤 인자를 지워주는 코드를 작성해 준다.
+<br><br>
+
+```js
+useEffect(() => {
+  function onScroll() {
+    console.log(
+      window.scrollY,
+      document.documentElement.clientHeight,
+      document.documentElement.scrollHeight
+    );
+    if (
+      window.scrollY + document.documentElement.clientHeight >
+      document.documentElement.scrollHeight - 300
+    ) {
+      if (hasMorePosts && !loadPostsLoading) {
+        dispatch({
+          type: LOAD_POSTS_REQUEST,
+        });
+      }
+    }
+  }
+  window.addEventListener("scroll", onScroll);
+  return () => {
+    window.removeEventListener("scroll", onScroll);
+  };
+}, [hasMorePosts, loadPostsLoading]);
+```
+
+<br>
+
+일단, 스크롤이 어떤 부분과 연관되어 있는지 콘솔 로그를 통해 알아보아야 한다. 콘솔 로그를 통해 `window.scrollY, document.documentElement.clientHeight, document.documentElement.scrollHeight`를 확인해 보면 스크롤을 내릴 때마다 그 값이 변하는 것을 확인할 수 있다. 여기서 `window.scrollY`는 내가 얼마나 스크롤을 내렸는 지, `document.documentElement.clientHeight`는 화면에서 보이는 길이, `document.documentElement.scrollHeight`는 스크롤과 화면에서 보이는 총 길이의 값을 의미한다.
+<br><br>
+
+이것을 통해 `window.scrollY + document.documentElement.clientHeight = document.documentElement.scrollHeight`라는 값을 도출해 낼 수 있다. 이를 이용해서 `if (window.scrollY + document.documentElement.clientHeight = document.documentElement.scrollHeight)`로 스크롤이 내려 갔을 때, 다음 게시글이 나올 수 있게 하는 코드를 작성한다.
+<br><br>
+
+```js
+if (window.scrollY + document.documentElement.clientHeight = document.documentElement.scrollHeight) {
+      if (hasMorePosts && !loadPostsLoading) {
+        dispatch({
+          type: LOAD_POSTS_REQUEST,
+        });
+      }
+```
+
+<br>
+
+단, 실무에서는 스크롤이 다 내려오고 나서 다음 게시글이 나오는 것에 대한 연속성이 부족하기 때문에 스크롤이 다 내려오기 전 300 픽셀 정도에 다음 게시글이 나올 수 있도록 해주는 것이 좋다.
+<br><br>
+
+```js
+useEffect(() => {
+  function onScroll() {
+    if (window.scrollY + document.documentElement.clientHeight > document.documentElement.scrollHeight - 300) {
+      if (hasMorePosts && !loadPostsLoading) {
+        dispatch({
+          type: LOAD_POSTS_REQUEST,
+        });
+      }
+    }
+  }
+```
