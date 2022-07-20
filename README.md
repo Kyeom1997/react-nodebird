@@ -125,3 +125,152 @@ Next.js에는 자체적인 Router가 있다. 바로 Link이다.
 ![](https://velog.velcdn.com/images/hang_kem_0531/post/f7210c6b-1e88-407c-9b51-867bd7b52774/image.gif)
 
 next에서 link를 import 해온 뒤, href에 pages 폴더의 url들을 넣게 되면, 클릭 시에 해당 url로 이동하게 된다.
+
+### Antd와 styled-components
+
+이제 프론트 화면을 구성하기 위해 ant-design과 styled-components를 사용해 css와 design을 입혀보자.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/bda57dce-a650-4b63-a85c-af58b40b5754/image.png)
+
+ant-design icon과 같은 경우에는 용량이 커서 별도의 라이브러리로 분리해놓았기 때문에 이것 역시 별도로 설치해 주어야 한다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/9982f608-cc05-4aa8-809b-4b2317f55381/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/0e8d9422-3f59-41fe-95bf-2f82dbbcffe6/image.png)
+
+이렇게 antd에서 사용할 컴포넌트들을 import 해와서 사용하면 된다. 하지만 현재 css들이 깨져있는 모습을 확인할 수 있다.
+
+### \_app.js와 Head
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/05325446-949f-44e2-a1a5-e88cb9616829/image.png)
+
+antd의 공식 문서를 살펴보면, stylesheet를 사용하려면 위와 같이 css 파일을 import 해오라고 나와있다. 원래 css 파일은 import 할 수 없지만, Next는 webpack에서 css를 보는 순간 style 태그로 변환하여 html 파일에 넣어주게 된다. 위와 같은 css 파일은 전역 컴포넌트에 공통적으로 사용되기 때문에 `_app.js` 파일을 생성해 적용해 주어야 한다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/a14483ab-071d-4011-917b-096464748007/image.png)
+
+여기서 `<Component/>`는 index.js의 return 부분에 해당한다. 즉, \_app.js 는 index.js의 부모라고 볼 수 있다. 이렇게 변경해주고 npm run dev를 해보면 아까와는 다르게 스타일이 적용되어 있는 것을 확인할 수 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/23668688-fa65-4bd2-8e55-bab96bdfc464/image.gif)
+
+크롬이나 브라우저의 탭에서 나타나는 Head를 다르게 하려면 next/head에서 Head Component를 import해와서 사용하면 된다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/9a81f179-1375-49e9-999c-cac41e117357/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/572764b2-66c9-4357-8cda-161ae24a1eec/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/b6093abe-c7dd-4ea4-a8fc-ee29773cb6e2/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/0366d4d7-f7fc-4403-baa0-139f25b1be53/image.gif)
+
+### 반응형 그리드 사용하기
+
+css 프레임워크에는 그리드 시스템이 있다. 웹에 반응형을 적용할 때에는 모바일 -> 태블릿 -> 데스크탑 순으로 구현하는 것이 좋다. 여기서 xs는 모바일, sm은 태블릿, md는 작은 데스크탑의 단위이다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/14c746d4-e975-4ebe-887c-1b9ac37aafc5/image.png)
+
+여기서는 모바일일때는 각각의 Column이 24, 즉 전체를 다 차지해 스택처럼 3개가 쌓이게 되고, 데스크탑일때에는 첫번째 Column이 25%, 두번째 Column이 50%, 세번째 Column이 25%를 차지하게 된다. Row에 붙어있는 gutter라는 속성은, Column들이 너무 붙어있지 않도록 사이 사이에 padding 값을 넣어주는 역할이다.
+
+세 번째 Column에 a 태그를 통해 내 velog로 이동해 줄 수 있게 하였는데, 이때 `target="_blank"`만 사용하게 되면 보안상의 위험이 발생할 수 있기 때문에, 별도로 `rel="noreferrer noopener"` 속성을 추가해 주었다.
+
+### 로그인 폼 만들기
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/26ff083f-288a-4d89-87bc-4fd18a258e41/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/002e825c-04a5-41df-ac94-0ff18dd794cb/image.png)
+
+아직 백엔드 서버가 없기 때문에, 로그인을 실제로 구현할 수는 없으니 더미 데이터를 활용하여 로그인을 구현해보자. isLoggedIn이라는 state로 로그인 상황을 만들고, isLoggedIn일때는 사용자 프로필 컴포넌트를, 아닐 때에는 로그인 폼 컴포넌트를 보여주도록 하였다.
+
+```jsx
+import { Button, Form, Input } from "antd";
+import Link from "next/link";
+import React, { useState } from "react";
+
+const LoginForm = () => {
+  const [input, setInput] = useState({
+    id: "",
+    pwd: "",
+  });
+  const { id, pwd } = input;
+  const handleInput = (e) => {
+    const { name, value } = e.target;
+    setInput({
+      ...input,
+      [name]: value,
+    });
+  };
+  return (
+    <Form>
+      <div>
+        <label htmlFor="id">아이디</label>
+        <br />
+        <Input name="id" value={id} onChange={handleInput} required />
+      </div>
+      <div>
+        <label htmlFor="pwd">비밀번호</label>
+        <br />
+        <Input
+          name="pwd"
+          type="password"
+          value={pwd}
+          onChange={handleInput}
+          required
+        />
+      </div>
+      <div>
+        <Button type="primary" htmlType="submit" loading={false}>
+          로그인
+        </Button>
+        <Link href="/signup">
+          <a>
+            <Button>회원가입</Button>
+          </a>
+        </Link>
+      </div>
+    </Form>
+  );
+};
+
+export default LoginForm;
+```
+
+여기서는 이전에 구현하였던 westagram 로직을 활용하여 id, pwd의 input value값을 한번에 관리하고 setter 함수 역시 handleInput이라는 함수로 한번에 state를 업데이트를 할 수 있게 구현하였다. 이전에 강의를 들을때는 뭐가 뭔지도 모르고 따라치기만 했는데 이제는 내가 사용하였던 코드들을 재활용하면서 클린 코딩을 어느정도 할 수 있게 된 것 같다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/3717259e-fc22-4484-be7b-0f0deeb52920/image.gif)
+
+### 리렌더링 이해하기
+
+비밀번호와 로그인, 회원가입 버튼이 너무 붙어있어서 버튼 상단에 margin 값을 주고자 한다. 하지만 주의해야 할 점이 있다.
+
+```js
+<div style={{ marginTop: 10 }}>
+```
+
+이런 식으로 style 안에다 객체를 넣으면 안된다. LoginForm이 리렌더링 될 때마다, 아래 LoginForm 함수는 전체적으로 재 실행이 되는데, 이때 객체와 객체를 비교하게 되면 false가 나오게 된다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/b85be907-e993-4edf-baf9-29e8d1c94235/image.png)
+
+그렇기 때문에 React의 Virtual DOM에서 div 태그의 inline-style에서 객체를 리렌더링시에 다르다고 인식하게 되어 div 태그 전체가 리렌더링 되게 된다. 이는 매우 비효율적이므로, styled-components를 사용해야 한다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/ea5590dd-c41f-44a2-abc1-10454bf000fa/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/c428f157-03c6-418c-bf2a-215fbd0c0145/image.png)
+
+만일, styled-components를 사용하고 싶지 않다면 useMemo Hooks를 사용하면 된다. useMemo는 memoization 된 값을 반환해주는 함수이다. 그렇기 때문에 다음과 같이 작성하면 리렌더링이 되어도 같은 객체를 사용할 수 있다.
+
+```jsx
+const style = useMemo(() => ({ marginTop: 10}), []);
+
+<ButtonWrapper style={style}>
+```
+
+### 더미 데이터로 로그인하기
+
+LoginForm을 감싸고 있는 FormWrapper에 onFinish 속성을 주어, onSubmitForm 함수를 실행하도록 하였다. 여기서, onFinish는 자동으로 e.preventDefault()가 적용이 되어있기 때문에 antd에서는 e.preventDefault()를 쓰면 안된다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/e5438db5-dd74-4317-89d2-9692d1b43f7e/image.png)
+
+그리고 AppLayout 컴포넌트에서 각각 UserProfile, LoginForm 컴포넌트로 setLoggedIn 함수를 props로 전달해 주었다. 그리고, UserProfile에서는 로그아웃 버튼을 클릭할 시에 onClick 함수로 `setLoggedIn(false)`를, LoginForm에서는 로그인 버튼을 클릭할 시에 `setLoggedIn(true)`를 실행하게 하였다. 이렇게 하면 더미 데이터로 로그인 기능을 구현할 수 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/4b277bac-c3bb-4691-afbe-8b5264f473b8/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/ee108084-bd70-4431-9377-94a9b87cb654/image.png)
