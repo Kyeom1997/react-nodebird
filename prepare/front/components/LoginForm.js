@@ -1,16 +1,19 @@
 import { Button, Form, Input } from "antd";
 import Link from "next/link";
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import useInput from "../hooks/useInput";
+import { useDispatch } from "react-redux";
+import { loginAction } from "../reducers/user";
 
-const LoginForm = ({ setIsLoggedIn }) => {
+const LoginForm = () => {
+  const dispatch = useDispatch();
   const [id, onChangeId] = useInput("");
   const [pwd, onChangePwd] = useInput("");
 
   const onSubmitForm = useCallback(() => {
-    setIsLoggedIn(true);
+    dispatch(loginAction({ id, pwd }));
   }, [id, pwd]);
 
   return (
