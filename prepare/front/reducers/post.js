@@ -6,7 +6,7 @@ export const initialState = {
         id: 1,
         nickname: "행갬",
       },
-      content: "첫 번째 게시글 #해시태그 #익스프레스",
+      content: "첫 번째 게시글 #해시태그 #김행갬",
       Images: [
         {
           src: "https://velog.velcdn.com/images/hang_kem_0531/post/da39edf1-77ba-410d-9a12-6dc814e5b5e2/image.jpg",
@@ -48,7 +48,7 @@ const dummyPost = {
   content: "더미데이터입니다.",
   User: {
     id: 1,
-    name: "행갬",
+    nickname: "행갬",
   },
   Images: [],
   Comments: [],
